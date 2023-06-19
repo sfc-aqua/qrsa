@@ -2,6 +2,5 @@
 # https://doc.rust-lang.org/cargo/reference/resolver.html#feature-resolver-version-2
 resolver = "2"
 members = [
-    "bootstrap",
-    "qrsa"
+    "bootstrap"
 ]
