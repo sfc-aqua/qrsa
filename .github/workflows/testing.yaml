@@ -30,11 +30,6 @@ jobs:
       steps:
           - name: Checkout repository
             uses: actions/checkout@v3
-          - name: Get rust tool chain
-            uses: actions-rs/toolchain@v1
-            with:
-              toolchain: stable
-              override: true
           - name: Get cargo tarpaulin
             run : cargo install cargo-tarpaulin
           - name: Clean just in case
