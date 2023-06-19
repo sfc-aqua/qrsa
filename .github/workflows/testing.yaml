@@ -1,0 +1,56 @@
+name: Build and unit test
+
+on: [push, pull_request]
+
+jobs:
+    build_test:
+        name: build_test
+        strategy:
+            matrix:
+                platforms: ['ubuntu-latest']
+        runs-on: ${{ matrix.platforms }}
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v3
+            - name: Run Cargo Check (Static check)
+              uses: actions-rs/cargo@v1
+              with:
+                command: check
+            - name: Run Cargo Build
+              uses: actions-rs/cargo@v1
+              with:
+                command: build
+            - name: Run Unittest
+              uses: actions-rs/cargo@v1
+              with:
+                command: test
+    coverge:
+      name: coverage measurement
+      runs-on: ubuntu-latest
+      steps:
+          - name: Checkout repository
+            uses: actions/checkout@v3
+          - name: Get nightly rust
+            uses: actions-rs/toolchain@v1
+            with:
+              toolchain: nightly
+              override: true
+          - name: Clean just in case
+            uses: actions-rs/cargo@v1
+            with:
+              command: clean
+          - name: Run tests
+            uses: actions-rs/cargo@v1
+            with:
+              command: test
+              args: --all-features
+            env:
+              CARGO_INCREMENTAL: '0'
+              RUSTFLAGS: '-Zprofile -Ccodegen-units=1 -Copt-level=0 -Clink-dead-code -Coverflow-checks=off -Zpanic_abort_tests -Cpanic=abort'
+              RUSTDOCFLAGS: '-Cpanic=abort'
+          - id: coverage
+            uses: actions-rs/grcov@v0.1
+          - name: Upload to codecov
+            uses: codecov/codecov-action@v3
+            with:
+              token: ${{ secrets.CODECOV_TOKEN }}
