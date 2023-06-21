@@ -15,7 +15,12 @@
 ## Introduction
 
 ## Interfaces
+HM -> RD (caller)
+- Update link cost
 
+HM -> RE
+- Link generation start
+- Link generation stop
 
 ## Activity Diagrams
 See detailed workflow in google drive (not publicly available)
@@ -104,7 +109,7 @@ Numbers are corresponding to the sequence numbers in the diagram
   - Invalid response format: The response format for link tomography is invalid.
 
 ### Start link generation 
-Related Components: HM, EPPS/BSA, RuleEngine
+Related Components: HM, EPPS/BSA, RuleEngine, Real-Time Controller
 
 Start link generation when a first RuleSet arrives and RE sends message to HM.
 
@@ -113,6 +118,7 @@ sequenceDiagram
 autonumber
 
 participant hm as HM
+participant rtc as Real-Time Controller (RTC)
 participant epbs as EPPS / BSA
 participant re as RuleEngine
 participant hm2 as HM at next hop
@@ -132,12 +138,17 @@ sequenceDiagram
 autonumber
 
 participant hm as HM
+participant rtc as RTC / Qubit
 participant bsa as BSA
+participant rtc2 as RTC / Qubit at next hop
 participant hm2 as HM at next hop
 
 loop for notified trials
-    hm -->> bsa: Photon 0
-    hm2 -->> bsa: Photon 0
+    hm ->> rtc: Photon emission request
+    Note over rtc: Photon emission command / Emit Photon
+    rtc -->> bsa: Photon 0
+    hm2 ->> rtc2: Photon emission request
+    rtc2 -->> bsa: Photon 0
     Note over bsa: Perform BSM
     Note over bsa: Stack BSM results
 end
@@ -154,17 +165,22 @@ sequenceDiagram
 autonumber
 
 participant hm as HM
+participant rtc as RTC / Qubit
 participant epps as EPPS
+participant rtc2 as RTC / Qubit at next hop
 participant hm2 as HM at next hop
 
-loop for expected trials (this could be streaming)
-    epps -->> hm: Photon Pair 0
-    epps -->> hm2: Photon Pair 0
+hm ->> rtc: Notify EPPS Start
+hm2 ->> rtc2: Notify EPPS Start
 
-    Note over hm: Perform BSM
-    Note over hm2: Perform BSM
-    Note over hm: Stack BSM result
-    Note over hm2: Stack BSM result
+loop for expected trials (this could be streaming)
+    epps -->> rtc: Photon Pair 0
+    epps -->> rtc2: Photon Pair 0
+
+    Note over rtc: Perform BSM
+    Note over rtc2: Perform BSM
+    rtc ->> hm: Stream BSM results
+    rtc2 ->> hm2: Stream BSM results
 end 
 
 hm ->> hm2: Meausrement results

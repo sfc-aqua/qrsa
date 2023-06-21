@@ -5,7 +5,8 @@ members = [
     "hardware_monitor",
     "rule_engine",
     "routing_daemon",
-    "realtime_controller"
+    "realtime_controller",
+    "tests"
 ]
 
 # https://doc.rust-lang.org/cargo/reference/resolver.html#feature-resolver-version-2
