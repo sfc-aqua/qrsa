@@ -7,7 +7,8 @@
   - [Connection Setup (at Responder)](#connection-setup-at-responder)
     - [Connection Teardown (at Initiator, Repeater/Router)](#connection-teardown-at-initiator-repeaterrouter)
     - [Link Allocation Update / Barrier](#link-allocation-update--barrier)
-  - [Configurations](#configurations)
+      - [Expected exceptions](#expected-exceptions)
+  - [Variables](#variables)
 
 
 ## Introduction
@@ -162,27 +163,41 @@ The next hop check also happens with routing daemon.
 Related components: CM, RE, 
 
 > note: We might meta policy to align over the different links
+
+Need to decide which is primary.
 ```mermaid
 sequenceDiagram
 autonumber
-
-participant cm as Connection Manager
-participant re as Rule Engine
-
-participant cm2 as CM at next hop
-participant re2 as RE at next hop
-
+Box orange Node A (Primary)
+    participant re as Rule Engine
+    participant cm as Connection Manager
+end
+Box pink Node B (Secondary)
+    participant cm2 as CM at next hop
+    participant re2 as RE at next hop
+end 
 
 Note over cm: New RS / Terminate RS
+Note over cm2: New RS / Terminate
+
 cm ->> re: New RS / Terminate Request
+cm2 ->> re2: New RS / Terminate Request
+
 re ->> cm: Return proposed LA
-cm ->> cm2: Send Proposed LA
+re2 ->> cm2: Return proposed LA
 
+cm ->> cm2: Send Primary LA
+cm2 ->> cm: Send LA acceptance message
 
+Note over cm, cm2: Stick with primary proposed LA
 ```
+#### Expected exceptions
+- 5: Inconsitent link information: CM at two nodes have different set of running RuleSet
+- message inconsistent error: Only one of the nodes gets new RS or RS termination then send primary LA but no ruleset running at Secondary node
 
-## Configurations
-|    key    |                              value                              | descripttions |
-| :-------: | :-------------------------------------------------------------: | :------------ |
-| node_type | ENUM ("Initiator", "Responder", "Repeater", "Router", "Switch") | test          |
-|           |                                                                 |               |
+## Variables
+|         key         |                             value                              | descripttions                                                |
+| :-----------------: | :------------------------------------------------------------: | :----------------------------------------------------------- |
+|      node_type      | Enum("Initiator", "Responder", "Repeater", "Router", "Switch") | A type of network node                                       |
+| link_interface_list |                   List\[LinkInterfaceInfo\]                    | Link information cached in cm to store performance indicator |
+|                     |                                                                |                                                              |
