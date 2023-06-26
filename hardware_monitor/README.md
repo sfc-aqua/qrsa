@@ -35,11 +35,15 @@ autonumber
 participant hm as Hardware Monitor (HM)
 participant rd as Routing Daemon (RD)
 participant epbs as EPPS / BSA
+participant rtc as Real-Time Controller
 participant hm2 as HM at next hop
 
 Note over hm: Boot HM (Link up)
 hm ->> rd: Request next hop repeater info
 rd ->> hm: Return next hop repeater info
+
+hm ->> rtc: Check local hardware information
+rtc ->> hm: Return local hardware information
 
 hm ->> hm2: Notify new link up
 hm ->> epbs: Request device config

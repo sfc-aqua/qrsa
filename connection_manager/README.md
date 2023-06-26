@@ -8,6 +8,8 @@
     - [Connection Teardown (at Initiator, Repeater/Router)](#connection-teardown-at-initiator-repeaterrouter)
     - [Link Allocation Update / Barrier](#link-allocation-update--barrier)
       - [Expected exceptions](#expected-exceptions)
+  - [Data Structures](#data-structures)
+  - [Message Contents](#message-contents)
   - [Variables](#variables)
 
 
@@ -195,6 +197,11 @@ Note over cm, cm2: Stick with primary proposed LA
 - 5: Inconsitent link information: CM at two nodes have different set of running RuleSet
 - message inconsistent error: Only one of the nodes gets new RS or RS termination then send primary LA but no ruleset running at Secondary node
 
+
+## Data Structures
+
+
+## Message Contents
 ## Variables
 |         key         |                             value                              | descripttions                                                |
 | :-----------------: | :------------------------------------------------------------: | :----------------------------------------------------------- |
