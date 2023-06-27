@@ -10,8 +10,6 @@
   - [Data Structures](#data-structures)
   - [Message Contents](#message-contents)
 
-When one rule is added or teminated, RE create proposed LA for next link allocation
-
 ## Introduction
 
 ## Activity Diagrams
