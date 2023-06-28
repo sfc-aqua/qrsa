@@ -5,6 +5,9 @@
     - [Setup](#setup)
     - [Perform Instruction](#perform-instruction)
     - [Perform instruction to locked qubits](#perform-instruction-to-locked-qubits)
+  - [Interfaces](#interfaces)
+    - [Hardware](#hardware)
+    - [Software](#software)
 
 
 ## Introduction
@@ -100,3 +103,37 @@ Note over rtc: Unlock qubit
 ```
 
 If the timeout exceeds, RTC returns error to corresponding components
+
+
+## Interfaces
+
+### Hardware
+In this level, the granularity of the instruction is still vague. Actual operations are derived from these instructions.
+
+- Stationary Qubit: matter qubits to store the quantum information
+  - EmitPhoton: Emit a flying qubit entangled with stationary qubit.
+  - GateX: X gate operation
+  - GateY: Y gate operation
+  - GateZ: Z gate operation
+  - GateH: H gate operation
+  - GateS: S gate operation
+  - GateSdg: S dagger gate operation
+  - GateT: T gate operation
+  - GateTdg: T dagger gate operation
+  - GateCX: CX gate operation
+  - GateCX: CZ gate operation
+  - Lock: Lock qubit to keep exclusiveness
+  - Unlock: Unlock qubit for other thread to perform instructions
+- Internal Flying BSA: Perform BSA for flying qubits
+  - OpenDetector: Open photon detector to detect incoming photon
+  - CloseDetector: Close photon detector
+  - ExtractResult: Get detection results out of BSA
+  - StreamResult (?): 
+- Internal Stationary BSA: Bell state analyzer to peform internal Bell state measurement on stationary quantum memories
+  - PerformBSA: Perform Bell state measurement between two stationary memories and return measurement results.
+- ...
+
+### Software
+- RuleEngine, HardwareMonitor:
+  - PerformInstruction: RuleEngine, HardwareMonitor can manipulate this API to perform instructions listed above
+  - GetHardwareInformation: RE, HM can get hardware information
