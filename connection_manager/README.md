@@ -1,6 +1,7 @@
 # Connection Manager (CM)
 - [Connection Manager (CM)](#connection-manager-cm)
   - [Introduction](#introduction)
+  - [Modules](#modules)
   - [Activity Diagrams](#activity-diagrams)
     - [Connection Setup (at Initiator)](#connection-setup-at-initiator)
     - [Connection Setup (at Repeater/Router)](#connection-setup-at-repeaterrouter)
@@ -14,6 +15,11 @@
 
 
 ## Introduction
+
+## Modules
+- connection_manager: The main module that communicates with external components
+- message.rs: The model of message contents
+
 
 ## Activity Diagrams
 

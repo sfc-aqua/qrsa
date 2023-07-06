@@ -1,6 +1,8 @@
 # Real-Time Controller(RTC)
 - [Real-Time Controller(RTC)](#real-time-controllerrtc)
   - [Introduction](#introduction)
+  - [Components](#components)
+  - [Hardware Abstraction](#hardware-abstraction)
   - [Activity Diagrams](#activity-diagrams)
     - [Setup](#setup)
     - [Perform Instruction](#perform-instruction)
@@ -13,6 +15,15 @@
 ## Introduction
 Real-Time Controller is a thin wrapper for Rule Engine to manipulate peripherals such as qubit controller, classical network interface.
 
+## Components
+- contoller.rs: A main process that communicates with RS, HW and Hardware Drivers
+- instruction_converter.rs: Convert high level instructions into hardware dependent instruction sets.
+  - Should be configurable with external config file
+- hal_wrapper: Hardware abstraction layer wrapper to assume virtual hardwares are existeing
+
+
+## Hardware Abstraction
+In order for higher layer components to manipulate low layer devices such as qubit memories and real-time communication devices, 
 
 ## Activity Diagrams
 ### Setup
