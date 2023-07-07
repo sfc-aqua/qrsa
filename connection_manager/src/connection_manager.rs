@@ -14,6 +14,7 @@ impl ConnectionManager{
     /// When only the node type is initiator, this function can be executed
     /// 
     /// 
+    #[cfg(feature="initiator")]
     pub fn accept_application(){
 
     }
@@ -47,4 +48,10 @@ impl ConnectionManager{
     pub async fn listen_to_barrier(){
 
     }
+}
+
+
+#[cfg(test)]
+mod tests{
+
 }
