@@ -12,5 +12,7 @@ For those who would like to contribute this project, this guide provides useful 
 
 ## Coding Rules
 
+## Logging policy
+
 ### Naming Convention
 QRSA follows [Rust's naming convention.](https://rust-lang.github.io/api-guidelines/naming.html)

@@ -1,10 +1,11 @@
 # Connection Manager (CM)
 - [Connection Manager (CM)](#connection-manager-cm)
   - [Introduction](#introduction)
+  - [Modules](#modules)
   - [Activity Diagrams](#activity-diagrams)
     - [Connection Setup (at Initiator)](#connection-setup-at-initiator)
     - [Connection Setup (at Repeater/Router)](#connection-setup-at-repeaterrouter)
-  - [Connection Setup (at Responder)](#connection-setup-at-responder)
+    - [Connection Setup (at Responder)](#connection-setup-at-responder)
     - [Connection Teardown (at Initiator, Repeater/Router)](#connection-teardown-at-initiator-repeaterrouter)
     - [Link Allocation Update / Barrier](#link-allocation-update--barrier)
       - [Expected exceptions](#expected-exceptions)
@@ -15,10 +16,15 @@
 
 ## Introduction
 
+## Modules
+- connection_manager: The main module that communicates with external components
+- message.rs: The model of message contents
+
+
 ## Activity Diagrams
 
 ### Connection Setup (at Initiator)
-Related components: CM, Application, Routing Daemon, Rule Engine, Hardware MOnitor
+Related components: CM, Application, Routing Daemon, Rule Engine, Hardware Monitor
 
 ```mermaid
 sequenceDiagram
@@ -92,7 +98,7 @@ cm ->> cm0: Forward response
 Note over cm0, cm2: LAU / Barrier
 ```
 
-## Connection Setup (at Responder)
+### Connection Setup (at Responder)
 Related components: CM, RuleEngine, Routing Daemon, Hardware monitor
 ```mermaid
 sequenceDiagram
