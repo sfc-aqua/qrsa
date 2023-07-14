@@ -1,6 +1,6 @@
 # Common
 
 ## Introduction
-Common utils for entire QRSA
+This implements cross component datastructures and messages
 
 ## 
