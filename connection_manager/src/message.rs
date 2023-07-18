@@ -5,7 +5,9 @@ use serde::{ser::Serialize, Deserialize};
 // pub (crate) trait Message<'a, T: Serialize + Deserialize<'a>>{
 
 // }
-pub(crate) trait Message {}
+pub(crate) trait Message {
+    
+}
 
 pub(crate) struct ConnectionSetupRequest {}
 

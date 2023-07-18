@@ -7,6 +7,9 @@ edition = "2021"
 
 [dependencies]
 serde = "1.0.166"
+tokio = {version = "1.29.1", features = ["rt", "macros"]}
+
+common = {path = "../common"}
 
 [features]
 initiator = []
