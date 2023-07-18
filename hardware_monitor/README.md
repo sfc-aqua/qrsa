@@ -8,7 +8,6 @@
       - [Expected Exceptions](#expected-exceptions)
     - [Link cost calculation](#link-cost-calculation)
       - [Expected Exceptions](#expected-exceptions-1)
-    - [Start link generation](#start-link-generation)
     - [Send link ready notification](#send-link-ready-notification)
     - [Stop link generation](#stop-link-generation)
 
@@ -34,23 +33,17 @@ autonumber
 
 participant hm as Hardware Monitor (HM)
 participant rd as Routing Daemon (RD)
-participant epbs as EPPS / BSA
 participant rtc as Real-Time Controller
 participant hm2 as HM at next hop
 
-Note over hm: Boot HM (Link up)
+Note over hm: Boot HM
+
+hm ->> rtc: Fetch local/peripheral hardware information
+
 hm ->> rd: Request next hop repeater info
 rd ->> hm: Return next hop repeater info
 
-hm ->> rtc: Check local hardware information
-rtc ->> hm: Return local hardware information
-
 hm ->> hm2: Notify new link up
-hm ->> epbs: Request device config
-epbs ->> hm: Send device config
-
-hm2 ->> epbs: Request device config
-epbs ->> hm2: Send device config
 ```
 
 Device configuration contains a set of information about the intermediate entanglement generation devices such as EPPS generation, BSA acceptable photon numbers per sec, EPPS estimated generation rate etc. 
@@ -111,85 +104,6 @@ Numbers are corresponding to the sequence numbers in the diagram
   - Invalid request format: The request format for link tomography is invalid.
 - 2. Response to link tomography request
   - Invalid response format: The response format for link tomography is invalid.
-
-### Start link generation 
-Related Components: HM, EPPS/BSA, RuleEngine, Real-Time Controller
-
-Start link generation when a first RuleSet arrives and RE sends message to HM.
-
-```mermaid
-sequenceDiagram
-autonumber
-
-participant hm as HM
-participant rtc as Real-Time Controller (RTC)
-participant epbs as EPPS / BSA
-participant re as RuleEngine
-participant hm2 as HM at next hop
-
-Note over re: Received the first RuleSet
-re ->> hm: Entanglement generation request
-hm ->> epbs: Link generation request
-epbs ->> hm: Link generation start notification / Timing
-epbs ->> hm2: Link generation start notification / Timing
-
-Note over hm, hm2: Entanglement generation start
-```
-
-**BSA**
-```mermaid
-sequenceDiagram
-autonumber
-
-participant hm as HM
-participant rtc as RTC / Qubit
-participant bsa as BSA
-participant rtc2 as RTC / Qubit at next hop
-participant hm2 as HM at next hop
-
-loop for notified trials
-    hm ->> rtc: Photon emission request
-    Note over rtc: Photon emission command / Emit Photon
-    rtc -->> bsa: Photon 0
-    hm2 ->> rtc2: Photon emission request
-    rtc2 -->> bsa: Photon 0
-    Note over bsa: Perform BSM
-    Note over bsa: Stack BSM results
-end
-
-bsa ->> hm: Send Result
-bsa ->> hm2: Send Result
-
-```
-
-**EPPS**
-```mermaid
-
-sequenceDiagram
-autonumber
-
-participant hm as HM
-participant rtc as RTC / Qubit
-participant epps as EPPS
-participant rtc2 as RTC / Qubit at next hop
-participant hm2 as HM at next hop
-
-hm ->> rtc: Notify EPPS Start
-hm2 ->> rtc2: Notify EPPS Start
-
-loop for expected trials (this could be streaming)
-    epps -->> rtc: Photon Pair 0
-    epps -->> rtc2: Photon Pair 0
-
-    Note over rtc: Perform BSM
-    Note over rtc2: Perform BSM
-    rtc ->> hm: Stream BSM results
-    rtc2 ->> hm2: Stream BSM results
-end 
-
-hm ->> hm2: Meausrement results
-hm2 ->> hm: Measurement results
-```
 
 
 ### Send link ready notification
