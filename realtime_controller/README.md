@@ -7,6 +7,7 @@
     - [Setup](#setup)
     - [Perform Instruction](#perform-instruction)
     - [Perform instruction to locked qubits](#perform-instruction-to-locked-qubits)
+    - [Start link generation](#start-link-generation)
   - [Interfaces](#interfaces)
     - [Hardware](#hardware)
     - [Software](#software)
@@ -114,6 +115,99 @@ Note over rtc: Unlock qubit
 ```
 
 If the timeout exceeds, RTC returns error to corresponding components
+
+### Start link generation 
+Related Components: HM, EPPS/BSA, RuleEngine, Real-Time Controller
+
+RTC get link entanglement generation request from either hardware monitor or rule engine
+
+```mermaid
+sequenceDiagram
+autonumber
+
+participant rehm as RE/HM
+participant rtc as Real-Time Controller (RTC)
+participant epbs as EPPS / BSA
+
+Note over rehm: Received the first RuleSet/Link tomography
+rehm ->> rtc: Link generation request
+Note over rtc, epbs: Link Generation process (below) 
+rtc ->> rehm: Link ready
+```
+
+
+**BSA**
+```mermaid
+sequenceDiagram
+autonumber
+
+participant rtc as RTC (master)
+participant qubit as HW/Qubit
+participant bsa as BSA
+participant qubit2 as Qubit at next hop
+participant rtc2 as RTC at next hop
+
+Note over rtc: Received link generation request
+rtc ->> bsa: Link generation start notification
+Note over bsa: Calculate photon emission timings
+bsa ->> rtc: Timing notification
+bsa ->> rtc2: Timing notification
+loop for notified trials (i, j to k, n)
+  rtc ->> qubit: Photon emission command
+  rtc2 ->> qubit2: Photon emission command
+  qubit -->> bsa: Photon i
+  qubit2 -->> bsa: Photon j
+  Note over bsa: Perform BSM
+  Note over bsa: Stack BSM results
+end
+
+bsa ->> rtc: Send Results
+bsa ->> rtc2: Send Results
+
+loop for trials
+  rtc ->> qubit: Perform Pauli correction
+  rtc2 ->> qubit2: Perform Pauli correction
+end
+```
+
+**EPPS**
+```mermaid
+
+sequenceDiagram
+autonumber
+
+participant rtc as RTC (master)
+participant qubit as Qubit
+participant bsa as BSA
+participant epps as EPPS
+participant bsa2 as BSA at next hop
+participant qubit2 as Qubit at next hop
+participant rtc2 as RTC at next hop
+
+Note over rtc: Received link generation request
+rtc ->> epps: Start link generation request
+epps ->> rtc: Estimated timing notification
+epps ->> rtc2: Estimated timing notification
+
+loop for expected trials (this could be streaming)
+    rtc ->> qubit: Photon emission command
+    epps -->> bsa: Photon Pair 0
+    qubit -->> bsa: Entangled Photon
+    epps -->> bsa2: Photon Pair 0
+    Note over bsa: Perform BSA
+    
+    rtc2 ->> qubit2: Photon emission command
+    qubit2 -->> bsa2: Entangled Photon
+    Note over bsa2: Perform BSM
+
+    bsa ->> rtc: BSM Result
+    bsa2 ->> rtc2: BSM Result
+end 
+
+rtc ->> rtc2: BSM results
+rtc2 ->> rtc: BSM results
+
+```
 
 
 ## Interfaces

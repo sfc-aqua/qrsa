@@ -10,6 +10,7 @@
     - [Link Allocation Update / Barrier](#link-allocation-update--barrier)
       - [Expected exceptions](#expected-exceptions)
   - [Data Structures](#data-structures)
+  - [RuleSet Creation Algorithms](#ruleset-creation-algorithms)
   - [Message Contents](#message-contents)
   - [Variables](#variables)
 
@@ -206,6 +207,7 @@ Note over cm, cm2: Stick with primary proposed LA
 
 ## Data Structures
 
+## RuleSet Creation Algorithms
 
 ## Message Contents
 ## Variables
