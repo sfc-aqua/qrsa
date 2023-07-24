@@ -1,2 +1,1 @@
-
-pub struct Connection{}
+pub struct Connection {}

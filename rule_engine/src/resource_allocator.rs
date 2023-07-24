@@ -1,7 +1,4 @@
-
 /// Resource Allocator is the one receives
-pub struct ResourceAllocator{}
+pub struct ResourceAllocator {}
 
-impl ResourceAllocator{
-
-}
+impl ResourceAllocator {}

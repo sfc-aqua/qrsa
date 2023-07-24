@@ -1,2 +1,2 @@
-pub mod resources;
 pub mod application_format;
+pub mod resources;

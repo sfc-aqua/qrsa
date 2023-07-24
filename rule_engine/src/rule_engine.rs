@@ -1,5 +1,5 @@
-use crate::resource_allocator::ResourceAllocator;
 use crate::la_policy_manager::LinkAllocationPolicyManager;
+use crate::resource_allocator::ResourceAllocator;
 use crate::scheduler::RuleSetScheduler;
 
 /// A component that executes RuleSet
@@ -13,17 +13,13 @@ pub struct RuleEngine {
 impl RuleEngine {
     pub fn new() {}
 
-    pub async fn boot(){}
+    pub async fn boot() {}
 
     /// Create a new policy manager that
     pub fn instantiate_policy_manager() {}
 
-
     /// Listen to new RuleSet coming from CM
-    pub async fn wait_for_new_ruleset(){}
-
-    
-
+    pub async fn wait_for_new_ruleset() {}
 }
 
 mod tests {}

@@ -7,8 +7,9 @@ edition = "2021"
 
 [dependencies]
 serde = "1.0.166"
-tokio = {version = "1.29.1", features = ["rt", "macros"]}
-
+config = {version = "0.13.3", features = ["toml"]}
+tokio = {version = "1.29.1", features = ["full"]}
+uuid = {version = "1.4.1", features = ["v4"]}
 common = {path = "../common"}
 
 [features]

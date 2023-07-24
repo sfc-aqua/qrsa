@@ -6,18 +6,16 @@ use std::time::SystemTime;
 /// - timestamp
 /// - current owner
 /// - PPTSN (Photon Pair Trial Sequence Number)
-pub struct ResourceId{
+pub struct ResourceId {
     /// sequencial number identifier of resource
     id: u128,
     /// The timestamp that this resource is created and ready
-    created_at: SystemTime
+    created_at: SystemTime,
 }
 
-
-pub enum ResourceType{
+pub enum ResourceType {
     Bell(BellState),
     Graph,
 }
 
-
-pub struct BellState{}
+pub struct BellState {}

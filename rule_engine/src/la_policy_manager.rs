@@ -4,7 +4,6 @@ pub(crate) struct LinkAllocationPolicyManager {
     // idle_runtimes: Ve
 }
 
-
 impl LinkAllocationPolicyManager {
     pub fn new() {}
 

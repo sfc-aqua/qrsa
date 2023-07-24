@@ -1,11 +1,10 @@
 use crate::resources::ResourceType;
 use core::time::Duration;
 
-
 /// A format for application to send requirements of generated entanglements
-/// 
-pub struct ApplicationRequestFormat{
-    /// The number of e2e requred 
+///
+pub struct ApplicationRequestFormat {
+    /// The number of e2e requred
     pub num_pairs: u64,
     /// Time constrains for preparation time
     pub timeout: Duration,
@@ -13,23 +12,20 @@ pub struct ApplicationRequestFormat{
     pub threshold_fidelity: f64,
     /// If this value is true, fidelity is higher priority
     /// and time would exceed
-    pub prioritize_fidelity: bool
+    pub prioritize_fidelity: bool,
 }
 
-impl ApplicationRequestFormat{
-    pub fn new(
-        num_pairs: u64,
-        resource_type: Option<ResourceType>
-    ){}
-        // match resource_type{
-        //     Some(res_type) => {
+impl ApplicationRequestFormat {
+    pub fn new(num_pairs: u64, resource_type: Option<ResourceType>) {}
+    // match resource_type{
+    //     Some(res_type) => {
 
-        //     },
-        //     None => {
-        //         ApplicationRequestFormat {
-        //             num_pairs,
-        //             ResourceType::Bell,
-        //         }
-        //     }
-        // }        
+    //     },
+    //     None => {
+    //         ApplicationRequestFormat {
+    //             num_pairs,
+    //             ResourceType::Bell,
+    //         }
+    //     }
+    // }
 }
