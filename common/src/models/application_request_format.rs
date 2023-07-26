@@ -1,8 +1,9 @@
-use crate::resources::ResourceType;
+use crate::models::resources::ResourceType;
 use core::time::Duration;
 
 /// A format for application to send requirements of generated entanglements
 ///
+#[derive(Default, Debug)]
 pub struct ApplicationRequestFormat {
     /// The number of e2e requred
     pub num_pairs: u64,
