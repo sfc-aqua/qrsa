@@ -1,4 +1,4 @@
-use crate::models::resources::ResourceType;
+use crate::common::resources::ResourceType;
 use core::time::Duration;
 
 /// A format for application to send requirements of generated entanglements

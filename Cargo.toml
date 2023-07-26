@@ -1,12 +1,7 @@
 [workspace]
 members = [
     "bootstrap",
-    "common",
-    "connection_manager",
-    "hardware_monitor",
-    "rule_engine",
-    "routing_daemon",
-    "realtime_controller",
+    "qrsa",
     "tests"
 ]
 

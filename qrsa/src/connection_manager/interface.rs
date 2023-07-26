@@ -1,7 +1,7 @@
 use async_trait::async_trait;
 use mockall::automock;
 
-use crate::models::application_request_format::ApplicationRequestFormat;
+use crate::common::application_request_format::ApplicationRequestFormat;
 
 #[automock]
 #[async_trait]

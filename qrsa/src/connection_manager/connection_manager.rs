@@ -6,17 +6,16 @@ use std::sync::{Arc, Mutex};
 use tokio::net::TcpListener;
 use uuid::Uuid;
 
-use crate::{config::CmConfig, connection::Connection, error::ConnectionManagerError, IResult};
-use common::{
-    interfaces::{
-        connection_manager::IConnectionManager, hardware_monitor::IHardwareMonitor,
-        rule_engine::IRuleEngine,
-    },
-    models::{
-        application_request_format::ApplicationRequestFormat,
-        performance_indicator::PerformanceIndicator,
-    },
-};
+use super::IResult;
+use crate::connection_manager::config::config::CmConfig;
+use crate::connection_manager::connection::connection::Connection;
+use crate::connection_manager::error::ConnectionManagerError;
+use crate::connection_manager::interface::IConnectionManager;
+
+use crate::common::application_request_format::ApplicationRequestFormat;
+use crate::common::performance_indicator::PerformanceIndicator;
+use crate::hardware_monitor::interface::IHardwareMonitor;
+use crate::rule_engine::interface::IRuleEngine;
 
 type ConnectionId = Uuid;
 
@@ -161,10 +160,9 @@ where
 
 #[cfg(test)]
 mod tests {
-    use common::interfaces::hardware_monitor::MockIHardwareMonitor;
-    use common::interfaces::rule_engine::MockIRuleEngine;
-
     use super::*;
+    use crate::hardware_monitor::interface::MockIHardwareMonitor;
+    use crate::rule_engine::interface::MockIRuleEngine;
 
     // test for common function
     #[test]

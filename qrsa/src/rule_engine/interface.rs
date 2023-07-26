@@ -1,4 +1,4 @@
-use crate::models::link_allocation_policy::LinkAllocationPolicy;
+use crate::common::link_allocation_policy::LinkAllocationPolicy;
 use mockall::automock;
 
 #[automock]
