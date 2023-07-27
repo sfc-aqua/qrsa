@@ -1,13 +1,15 @@
+use crate::cfg_initiator;
 use async_trait::async_trait;
 use config::Config;
 use std::collections::HashMap;
 use std::marker::Send;
+use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
 use tokio::net::TcpListener;
 use uuid::Uuid;
 
-use super::IResult;
-use crate::connection_manager::config::config::CmConfig;
+// use super::IResult;
+use crate::connection_manager::config::model::CmConfig;
 use crate::connection_manager::connection::connection::Connection;
 use crate::connection_manager::error::ConnectionManagerError;
 use crate::connection_manager::interface::IConnectionManager;
@@ -41,11 +43,11 @@ where
     rule_engine: Arc<Mutex<RE>>,
     // Latest performance indicator to pass the hardware information
     performance_indicator: Option<PerformanceIndicator>,
-    // request from application
-    #[cfg(feature = "initiator")]
-    application_requirements: Arc<Mutex<Vec<ApplicationRequestFormat>>>,
     // Config for connection mamanger
     config: CmConfig,
+    #[cfg(features = "initiator")]
+    // request from application
+    application_requirements: Arc<Mutex<Vec<ApplicationRequestFormat>>>,
 }
 
 #[async_trait]
@@ -54,10 +56,10 @@ where
     HM: IHardwareMonitor + Send,
     RE: IRuleEngine + Send,
 {
-    #[cfg(feature = "initiator")]
-    async fn accept_application(&mut self, app_req: ApplicationRequestFormat) {
-        println!("{:#?}", app_req);
-        self.application_requirements.lock().unwrap().push(app_req);
+    cfg_initiator! {
+        async fn accept_application(&mut self, app_req: ApplicationRequestFormat) {
+            self.application_requirements.lock().unwrap().push(app_req);
+        }
     }
 }
 
@@ -68,14 +70,17 @@ where
 {
     /// Create connection manager
     ///
-    pub fn new(hardware_monitor: Arc<Mutex<HM>>, rule_engine: Arc<Mutex<RE>>) -> Self {
-        let config_file_path = "Settings.toml";
-        let config = Config::builder()
-            .add_source(config::File::with_name(&config_file_path))
-            .build()
-            .unwrap()
-            .try_deserialize()
-            .unwrap();
+    pub fn new(
+        hardware_monitor: Arc<Mutex<HM>>,
+        rule_engine: Arc<Mutex<RE>>,
+        config_path: Option<&str>,
+    ) -> Self {
+        // Extract config from path
+        let config = match config_path {
+            Some(path) => CmConfig::from_path(path),
+            None => CmConfig::from_path("DefaultSettings.toml"),
+        };
+
         ConnectionManager {
             active_connections: Arc::new(Mutex::new(HashMap::new())),
             pending_connections: Arc::new(Mutex::new(vec![])),
@@ -169,7 +174,10 @@ mod tests {
     fn test_init() {
         let mock_hardware_monitor = Arc::new(Mutex::new(MockIHardwareMonitor::default()));
         let mock_rule_engine = Arc::new(Mutex::new(MockIRuleEngine::default()));
-        let connection_manager = ConnectionManager::new(mock_hardware_monitor, mock_rule_engine);
+        let connection_manager =
+            ConnectionManager::new(mock_hardware_monitor, mock_rule_engine, None);
+        assert_eq!(connection_manager.config.port, 52244);
+        assert_eq!(connection_manager.config.host, "0.0.0.0");
     }
 
     #[test]
@@ -184,33 +192,34 @@ mod tests {
     }
 
     #[cfg(test)]
-    #[cfg(feature = "initiator")]
-    mod initiator_tests {
-        use super::*;
-        #[test]
-        fn test_initiator() {
-            assert_eq!(1, 1)
-        }
+    cfg_initiator!(
+        mod initiator_tests {
+            use super::*;
+            #[test]
+            fn test_initiator() {
+                assert_eq!(1, 1)
+            }
 
-        #[tokio::test]
-        async fn test_accept_application_request() {
-            let mock_hardware_monitor = Arc::new(Mutex::new(MockIHardwareMonitor::default()));
-            let mock_rule_engine = Arc::new(Mutex::new(MockIRuleEngine::default()));
+            #[tokio::test]
+            async fn test_accept_application_request() {
+                let mock_hardware_monitor = Arc::new(Mutex::new(MockIHardwareMonitor::default()));
+                let mock_rule_engine = Arc::new(Mutex::new(MockIRuleEngine::default()));
 
-            let mut connection_manager =
-                ConnectionManager::new(mock_hardware_monitor, mock_rule_engine);
-            let application_request_format = ApplicationRequestFormat::default();
-            connection_manager
-                .accept_application(application_request_format)
-                .await;
-            assert_eq!(
+                let mut connection_manager =
+                    ConnectionManager::new(mock_hardware_monitor, mock_rule_engine);
+                let application_request_format = ApplicationRequestFormat::default();
                 connection_manager
-                    .application_requirements
-                    .lock()
-                    .unwrap()
-                    .len(),
-                1
-            );
+                    .accept_application(application_request_format)
+                    .await;
+                assert_eq!(
+                    connection_manager
+                        .application_requirements
+                        .lock()
+                        .unwrap()
+                        .len(),
+                    1
+                );
+            }
         }
-    }
+    );
 }

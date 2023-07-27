@@ -1,15 +1,23 @@
 pub mod connection_manager {
     pub mod config {
-        pub(crate) mod config;
+        pub(crate) mod model;
     }
     pub(crate) mod connection {
         pub mod connection;
     }
+    pub(crate) mod message {
+        pub mod message;
+    }
+    pub(crate) mod ruleset_factory {
+        pub(crate) mod ruleset_factory;
+    }
+
+    pub(crate) mod macros {
+        pub(crate) mod cfg;
+    }
     pub mod connection_manager;
     pub(crate) mod error;
     pub(crate) mod interface;
-    pub(crate) mod message;
-    pub(crate) mod ruleset_factory;
 
     use error::ConnectionManagerError;
     type IResult<T> = Result<T, ConnectionManagerError>;
