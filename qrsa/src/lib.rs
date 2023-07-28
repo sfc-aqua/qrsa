@@ -3,8 +3,8 @@ pub mod connection_manager {
         pub(crate) mod model;
     }
     pub(crate) mod connection {
-        pub mod id;
         pub mod connection;
+        pub mod id;
     }
     pub(crate) mod message {
         pub mod barrier;

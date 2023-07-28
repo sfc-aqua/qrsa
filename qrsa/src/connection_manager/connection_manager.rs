@@ -11,9 +11,7 @@ use tokio_util::codec::{FramedRead, LengthDelimitedCodec};
 // use super::IResult;
 use crate::connection_manager::config::model::CmConfig;
 use crate::connection_manager::connection::connection::Connection;
-use crate::connection_manager::connection::id::{
-    application_id::ApplicationId, connection_id::ConnectionId,
-};
+use crate::connection_manager::connection::id::{ApplicationId, ConnectionId};
 use crate::connection_manager::error::ConnectionManagerError;
 use crate::connection_manager::interface::IConnectionManager;
 

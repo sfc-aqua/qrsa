@@ -11,6 +11,4 @@ pub(crate) struct ConnectionSetupRequest {
     performance_indicator: PerformanceIndicator,
 }
 
-impl Message for ConnectionSetupRequest {
-    
-}
+impl Message for ConnectionSetupRequest {}
