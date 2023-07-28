@@ -3,9 +3,15 @@ pub mod connection_manager {
         pub(crate) mod model;
     }
     pub(crate) mod connection {
+        pub mod id;
         pub mod connection;
     }
     pub(crate) mod message {
+        pub mod barrier;
+        pub mod connection_setup_reject;
+        pub mod connection_setup_request;
+        pub mod connection_setup_response;
+        pub mod link_allocation_update;
         pub mod message;
     }
     pub(crate) mod ruleset_factory {

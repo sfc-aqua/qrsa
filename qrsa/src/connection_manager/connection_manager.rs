@@ -1,16 +1,19 @@
-use crate::cfg_initiator;
+use crate::{cfg_initiator, cfg_repeater, cfg_responder};
 use async_trait::async_trait;
-use config::Config;
 use std::collections::HashMap;
 use std::marker::Send;
-use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
+
 use tokio::net::TcpListener;
-use uuid::Uuid;
+use tokio_stream::StreamExt;
+use tokio_util::codec::{FramedRead, LengthDelimitedCodec};
 
 // use super::IResult;
 use crate::connection_manager::config::model::CmConfig;
 use crate::connection_manager::connection::connection::Connection;
+use crate::connection_manager::connection::id::{
+    application_id::ApplicationId, connection_id::ConnectionId,
+};
 use crate::connection_manager::error::ConnectionManagerError;
 use crate::connection_manager::interface::IConnectionManager;
 
@@ -18,12 +21,6 @@ use crate::common::application_request_format::ApplicationRequestFormat;
 use crate::common::performance_indicator::PerformanceIndicator;
 use crate::hardware_monitor::interface::IHardwareMonitor;
 use crate::rule_engine::interface::IRuleEngine;
-
-type ConnectionId = Uuid;
-
-/// ApplicationId is used to identify which application is corresponding to which RuleSet
-/// Initiator pass this id to responder and responder creates RuleSets and return them with this value
-type ApplicationId = Uuid;
 
 /// A main struct for Connection Manager that stores running connection information and
 /// manages them
@@ -93,27 +90,52 @@ where
         }
     }
 
-    // /// Start running connection manager
-    // #[cfg(feature = "initiator")]
-    // async fn boot(&mut self) {
-    //     // Get performance indicator
-    //     self.request_performance_indicator()
-    // }
+    // functions unique to initiator node
+    // cfg_initiator!(
+    //     pub async fn boot(&mut self) {
+    //         self.boot_tcp_listener()
+    //     }
+    //     pub async fn accept_application(&mut self, app_req: ApplicationRequestFormat) {}
+    // );
 
-    // #[cfg(not(feature = "initiator"))]
-    // async fn boot(&mut self) {
-    // }
+    // // functions unique to repeater node
+    // cfg_repeater!(
+    //     pub async fn boot(&mut self) {
+    //         self.boot_tcp_lister()
+    //     }
+    // );
 
-    async fn boot_listener(&self) {
+    // // functions unique to responder node
+    // cfg_responder!(
+    //     pub async fn boot(&mut self) {
+    //         // Get performance indicator
+    //         self.request_performance_indicator()
+    //     }
+
+    //     async fn create_ruleset() {}
+    // );
+
+    pub async fn boot(&self) {
+        self.boot_tcp_listener().await;
+    }
+
+    // functions common for all the features
+    async fn boot_tcp_listener(&self) {
         // TODO: Request neighbor information to RD here
         let socket_addr = format!("{}:{}", self.config.host, self.config.port);
-        let listener = TcpListener::bind(socket_addr).await.unwrap();
-        // loop {
-        //     let (socket, _) = listener.accept().await.unwrap();
-        //     tokio::spawn(async {
-        //         self.handle_connection(socket)
-        //     });
-        // }
+        let listener = TcpListener::bind(&socket_addr).await.unwrap();
+
+        // keep listen to incoming request, response
+        loop {
+            let (client, _) = listener.accept().await.unwrap();
+            let mut frame_reader = FramedRead::new(client, LengthDelimitedCodec::new());
+            while let Some(frame) = frame_reader.next().await {
+                match frame {
+                    Ok(data) => println!("{:?}", data),
+                    Err(err) => println!("error {:?}", err),
+                }
+            }
+        }
     }
 
     fn request_performance_indicator(&mut self) {
@@ -130,37 +152,40 @@ where
     /// The application manipulate this function to start the application
     /// When only the node type is initiator, this function can be executed
     ///
-    #[cfg(feature = "initiator")]
-    pub async fn accept_application(&mut self, app_req: ApplicationRequestFormat) {}
-
-    #[cfg(any(feature = "initiator", feature = "repeater"))]
     async fn forward_connection_setup_request(&self) {}
 
     /// Listen to incoming connection setup request
     /// This function wait for request from initiator
     ///
-    #[cfg(any(feature = "repeater", feature = "responder"))]
-    pub async fn listen_to_connection_setup_request(&self) {}
+    async fn accept_connection_setup_request(&self) {}
+
+    /// Reject to connection setup request
+    /// Rejection conditon
+    ///     1. ?
+    async fn reject_connection_setup_request(&self) {}
 
     /// Listen to incoming connection setup response
     ///
-    #[cfg(any(feature = "initiator", feature = "repeater"))]
-    pub async fn listen_to_connection_setup_response(&self) {}
+    async fn accept_connection_setup_response(&self) {}
+
+    /// Reject to incoming connection setup response
+    /// and send back abort message back to responder
+    async fn reject_connection_setup_response(&self) {}
 
     /// Listen to incoming connection setup reject
     ///
-    #[cfg(any(feature = "initiator", feature = "repeater"))]
-    pub async fn listen_to_connection_setup_reject(&self) {}
+    async fn accept_connection_setup_request_reject(&self) {}
 
-    #[cfg(feature = "repeater")]
-    pub async fn listen_to_ruleset_termination(&self) {}
+    async fn accept_connection_setup_response_reject(&self) {}
+
+    async fn accept_ruleset_termination(&self) {}
 
     /// Listen to incoming LAU
-    pub async fn listen_to_link_allocation_update() {}
+    async fn accept_link_allocation_update() {}
 
     /// Listen to incoming Barrier
     ///
-    pub async fn listen_to_barrier() {}
+    async fn accept_barrier() {}
 }
 
 #[cfg(test)]
@@ -169,6 +194,12 @@ mod tests {
     use crate::hardware_monitor::interface::MockIHardwareMonitor;
     use crate::rule_engine::interface::MockIRuleEngine;
 
+    // Helper function to get
+    fn get_cm_with_mock() -> ConnectionManager<MockIHardwareMonitor, MockIRuleEngine> {
+        let mock_hardware_monitor = Arc::new(Mutex::new(MockIHardwareMonitor::default()));
+        let mock_rule_engine = Arc::new(Mutex::new(MockIRuleEngine::default()));
+        ConnectionManager::new(mock_hardware_monitor, mock_rule_engine, None)
+    }
     // test for common function
     #[test]
     fn test_init() {
@@ -178,6 +209,13 @@ mod tests {
             ConnectionManager::new(mock_hardware_monitor, mock_rule_engine, None);
         assert_eq!(connection_manager.config.port, 52244);
         assert_eq!(connection_manager.config.host, "0.0.0.0");
+    }
+
+    #[tokio::test]
+    #[ignore = "This boots actual socket. Ignore in unittesting"]
+    async fn test_boot() {
+        let mock_cm = get_cm_with_mock();
+        mock_cm.boot().await
     }
 
     #[test]

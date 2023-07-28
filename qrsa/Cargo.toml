@@ -7,8 +7,10 @@ edition = "2021"
 
 [dependencies]
 serde = "1.0.166"
+uuid = {version = "1.4.1", features = ["v4", "serde"]}
 config = {version = "0.13.3", features = ["toml"]}
-tokio = {version = "1.29.1", features = ["full"]}
-uuid = {version = "1.4.1", features = ["v4"]}
+tokio = {version = "1.29.1", features = ["full"]}  # TODO: remove unused features
+tokio-util = {version = "0.7.0", features = ["full"]}
+tokio-stream = "0.1"
 async-trait = "0.1.72"
 mockall = "0.11.4"
