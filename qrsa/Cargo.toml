@@ -12,5 +12,7 @@ config = {version = "0.13.3", features = ["toml"]}
 tokio = {version = "1.29.1", features = ["full"]}  # TODO: remove unused features
 tokio-util = {version = "0.7.0", features = ["full"]}
 tokio-stream = "0.1"
+tokio-serde = "0.8.0"
 async-trait = "0.1.72"
 mockall = "0.11.4"
+

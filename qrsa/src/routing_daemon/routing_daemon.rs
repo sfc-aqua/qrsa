@@ -1,3 +1,5 @@
+use super::interface::IRoutingDaemon;
+
 /// A struct that is responsible for
 ///  creating routing table
 ///  updating routing table
@@ -9,4 +11,8 @@ impl RoutingDaemon {
     pub fn new() {}
 
     pub fn get_interface_for_next_hop() {}
+}
+
+impl IRoutingDaemon for RoutingDaemon {
+    fn get_next_hop_interface(&self) {}
 }

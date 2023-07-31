@@ -1,3 +1,5 @@
+use super::interface::IHardwareMonitor;
+
 /// Hardware monitor structure
 ///
 ///
@@ -35,4 +37,8 @@ impl HardwareMonitor {
 
     /// Calculate link cost based on link tomography results
     fn calculate_link_cost() {}
+}
+
+impl IHardwareMonitor for HardwareMonitor {
+    fn get_performance_indicator(&self) {}
 }

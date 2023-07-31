@@ -2,5 +2,5 @@ use mockall::automock;
 
 #[automock]
 pub trait IRoutingDaemon {
-    fn get_interface_info();
+    fn get_next_hop_interface(&self);
 }
