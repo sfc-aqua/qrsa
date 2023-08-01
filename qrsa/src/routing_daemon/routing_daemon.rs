@@ -1,3 +1,5 @@
+use std::net::SocketAddr;
+
 use super::interface::IRoutingDaemon;
 
 /// A struct that is responsible for
@@ -14,5 +16,11 @@ impl RoutingDaemon {
 }
 
 impl IRoutingDaemon for RoutingDaemon {
-    fn get_next_hop_interface(&self) {}
+    fn get_next_hop_interface(&self) -> SocketAddr {
+        if cfg!(test) {
+            SocketAddr::from(([127, 0, 0, 1], 8080))
+        } else {
+            SocketAddr::from(([127, 0, 0, 1], 8080))
+        }
+    }
 }

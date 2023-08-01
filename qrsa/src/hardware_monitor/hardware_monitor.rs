@@ -1,3 +1,5 @@
+use crate::common::performance_indicator::PerformanceIndicator;
+
 use super::interface::IHardwareMonitor;
 
 /// Hardware monitor structure
@@ -40,5 +42,7 @@ impl HardwareMonitor {
 }
 
 impl IHardwareMonitor for HardwareMonitor {
-    fn get_performance_indicator(&self) {}
+    fn get_performance_indicator(&self) -> PerformanceIndicator {
+        PerformanceIndicator::default()
+    }
 }

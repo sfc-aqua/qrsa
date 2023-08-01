@@ -9,6 +9,7 @@ edition = "2021"
 serde = "1.0.166"
 uuid = {version = "1.4.1", features = ["v4", "serde"]}
 config = {version = "0.13.3", features = ["toml"]}
+bytes = "1"
 tokio = {version = "1.29.1", features = ["full"]}  # TODO: remove unused features
 tokio-util = {version = "0.7.0", features = ["full"]}
 tokio-stream = "0.1"

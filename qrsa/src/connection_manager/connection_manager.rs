@@ -3,9 +3,10 @@ use crate::{cfg_initiator, cfg_repeater, cfg_responder, routing_daemon};
 use async_trait::async_trait;
 use std::collections::HashMap;
 use std::marker::Send;
-use std::net::IpAddr;
+use std::net::SocketAddr;
 use std::sync::{Arc, Mutex};
 
+use bytes::BytesMut;
 use tokio::net::{TcpListener, TcpStream};
 use tokio_serde::{Deserializer, Serializer};
 use tokio_stream::StreamExt;
@@ -35,7 +36,7 @@ where
     /// This map is shared over multiple threads and multiple functions
     /// The corresponding TcpStream is used to send data to the other nodes
     /// Currently, IpAddr should be good enough to identify the node
-    pub tcp_sockets: Arc<Mutex<HashMap<IpAddr, TcpStream>>>,
+    pub tcp_sockets: Arc<Mutex<HashMap<SocketAddr, TcpStream>>>,
     /// A map of active running connections with connection id as a key
     /// This map is shared over multiple threads and multiple functions
     pub active_connections: Arc<Mutex<HashMap<ConnectionId, Connection>>>,
@@ -45,7 +46,6 @@ where
     performance_indicator: Option<PerformanceIndicator>,
     // Config for connection mamanger
     config: CmConfig,
-    #[cfg(features = "initiator")]
     // request from application
     application_requirements: Arc<Mutex<Vec<ApplicationRequestFormat>>>,
 
@@ -55,6 +55,8 @@ where
     rule_engine: Arc<Mutex<RE>>,
     // Reference to routing daemon
     routing_daemon: Arc<Mutex<RD>>,
+    #[cfg(features = "initiator")]
+    test:u32,
 }
 
 #[async_trait]
@@ -64,10 +66,9 @@ where
     RE: IRuleEngine + Send,
     RD: IRoutingDaemon + Send,
 {
-    cfg_initiator! {
-        async fn accept_application(&mut self, app_req: ApplicationRequestFormat) {
-            self.application_requirements.lock().unwrap().push(app_req);
-        }
+    async fn accept_application(&mut self, app_req: ApplicationRequestFormat) {
+        self.application_requirements.lock().unwrap().push(app_req);
+        // Send Connection Setup Request to the responder
     }
 }
 
@@ -96,7 +97,6 @@ where
             active_connections: Arc::new(Mutex::new(HashMap::new())),
             pending_connections: Arc::new(Mutex::new(vec![])),
             performance_indicator: None,
-            #[cfg(feature = "initiator")]
             application_requirements: Arc::new(Mutex::new(vec![])),
             config,
             hardware_monitor,
@@ -109,9 +109,6 @@ where
         pub async fn boot(&mut self) {
             self.accept_application(&mut self);
             self.boot_tcp_listener();
-        }
-        pub async fn accept_application(&mut self, app_req: ApplicationRequestFormat) {
-            self._accept_application(app_req);
         }
     );
 
@@ -132,13 +129,14 @@ where
     //     async fn create_ruleset() {}
     // );
 
-    pub async fn boot(&self) {
+    pub async fn boot(&mut self) {
+        self.get_performance_indicator();
         self.boot_tcp_listener().await;
     }
 
     // functions common for all the features
     async fn boot_tcp_listener(&self) {
-        // TODO: Request neighbor information to RD here
+        // Boot tcp listener and start listening
         let socket_addr = format!("{}:{}", self.config.host, self.config.port);
         let listener = TcpListener::bind(&socket_addr).await.unwrap();
 
@@ -150,7 +148,7 @@ where
                 match frame {
                     Ok(data) => {
                         // received data
-                        println!("{:?}", data);
+                        self.handle_message(&data).await;
                     }
                     Err(err) => {
                         // received error
@@ -161,32 +159,44 @@ where
         }
     }
 
-    fn request_performance_indicator(&mut self) {
+    fn get_performance_indicator(&mut self) {
         // Request performance indicator to hardware monitor
         if cfg!(test) {
-            self.performance_indicator = Some(PerformanceIndicator::default())
+            self.performance_indicator = Some(PerformanceIndicator::default());
         } else {
             // Fetch current performance indicator from HM
-            self.hardware_monitor
-                .lock()
-                .unwrap()
-                .get_performance_indicator();
+            self.performance_indicator = Some(
+                self.hardware_monitor
+                    .lock()
+                    .unwrap()
+                    .get_performance_indicator(),
+            );
         }
     }
 
-    async fn handle_connection(&self) {}
+    async fn handle_message(&self, data: &BytesMut) {}
     /// An interface to the application
     /// The application manipulate this function to start the application
     /// When only the node type is initiator, this function can be executed
     ///
     async fn forward_connection_setup_request(&self) {
         // Find next hop
-        let next_hop = if cfg!(test) {
+        let next_hop_socket_addr = if cfg!(test) {
             todo!("get next hop for testing")
         } else {
             self.routing_daemon.lock().unwrap().get_next_hop_interface()
         };
         // Send connection setup request to next hop
+        // Check if there is an existing connection to the next hop or not
+        if let Some(existing_connection) =
+            self.tcp_sockets.lock().unwrap().get(&next_hop_socket_addr)
+        {
+            // Send connection setup request to the next hop
+            // existing_connection.write_all(b"connection setup request").await.unwrap();
+        } else {
+            // Create a new connection to the next hop
+            let mut stream = TcpStream::connect(next_hop_socket_addr).await.unwrap();
+        }
     }
 
     /// Listen to incoming connection setup request
@@ -262,7 +272,7 @@ mod tests {
     #[tokio::test]
     #[ignore = "This boots actual socket. Ignore in unittesting"]
     async fn test_boot() {
-        let mock_cm = get_cm_with_mock();
+        let mut mock_cm = get_cm_with_mock();
         mock_cm.boot().await
     }
 
