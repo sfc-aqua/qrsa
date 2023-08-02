@@ -1,4 +1,4 @@
-use std::net::SocketAddr;
+use std::net::{IpAddr, SocketAddr};
 
 use super::interface::IRoutingDaemon;
 
@@ -16,7 +16,7 @@ impl RoutingDaemon {
 }
 
 impl IRoutingDaemon for RoutingDaemon {
-    fn get_next_hop_interface(&self) -> SocketAddr {
+    fn get_next_hop_interface(&self, destination: IpAddr) -> SocketAddr {
         if cfg!(test) {
             SocketAddr::from(([127, 0, 0, 1], 8080))
         } else {

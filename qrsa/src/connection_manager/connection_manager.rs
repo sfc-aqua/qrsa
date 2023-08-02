@@ -1,9 +1,10 @@
 use crate::routing_daemon::interface::IRoutingDaemon;
 use crate::{cfg_initiator, cfg_repeater, cfg_responder, routing_daemon};
 use async_trait::async_trait;
+use serde::__private::de;
 use std::collections::HashMap;
 use std::marker::Send;
-use std::net::SocketAddr;
+use std::net::{IpAddr, SocketAddr};
 use std::sync::{Arc, Mutex};
 
 use bytes::BytesMut;
@@ -11,6 +12,7 @@ use tokio::net::{TcpListener, TcpStream};
 use tokio_serde::{Deserializer, Serializer};
 use tokio_stream::StreamExt;
 use tokio_util::codec::{FramedRead, LengthDelimitedCodec};
+use tracing::info;
 
 // use super::IResult;
 use crate::connection_manager::config::model::CmConfig;
@@ -18,11 +20,15 @@ use crate::connection_manager::connection::connection::Connection;
 use crate::connection_manager::connection::id::{ApplicationId, ConnectionId};
 use crate::connection_manager::error::ConnectionManagerError;
 use crate::connection_manager::interface::IConnectionManager;
+use crate::connection_manager::message::connection_setup_request::ConnectionSetupRequest;
 
 use crate::common::application_request_format::ApplicationRequestFormat;
 use crate::common::performance_indicator::PerformanceIndicator;
 use crate::hardware_monitor::interface::IHardwareMonitor;
 use crate::rule_engine::interface::IRuleEngine;
+
+use super::message::connection_setup_request;
+use super::message::message::Message;
 
 /// A main struct for Connection Manager that stores running connection information and
 /// manages them
@@ -46,8 +52,6 @@ where
     performance_indicator: Option<PerformanceIndicator>,
     // Config for connection mamanger
     config: CmConfig,
-    // request from application
-    application_requirements: Arc<Mutex<Vec<ApplicationRequestFormat>>>,
 
     // Reference to hardware monitor. hardware monitor should live until it's terminated.
     hardware_monitor: Arc<Mutex<HM>>,
@@ -55,8 +59,6 @@ where
     rule_engine: Arc<Mutex<RE>>,
     // Reference to routing daemon
     routing_daemon: Arc<Mutex<RD>>,
-    #[cfg(features = "initiator")]
-    test:u32,
 }
 
 #[async_trait]
@@ -66,9 +68,10 @@ where
     RE: IRuleEngine + Send,
     RD: IRoutingDaemon + Send,
 {
-    async fn accept_application(&mut self, app_req: ApplicationRequestFormat) {
-        self.application_requirements.lock().unwrap().push(app_req);
+    async fn accept_application(&mut self, destination: IpAddr, app_req: ApplicationRequestFormat) {
         // Send Connection Setup Request to the responder
+        self.emit_connection_setup_request(destination, app_req)
+            .await;
     }
 }
 
@@ -97,37 +100,12 @@ where
             active_connections: Arc::new(Mutex::new(HashMap::new())),
             pending_connections: Arc::new(Mutex::new(vec![])),
             performance_indicator: None,
-            application_requirements: Arc::new(Mutex::new(vec![])),
             config,
             hardware_monitor,
             rule_engine,
             routing_daemon,
         }
     }
-
-    cfg_initiator!(
-        pub async fn boot(&mut self) {
-            self.accept_application(&mut self);
-            self.boot_tcp_listener();
-        }
-    );
-
-    // // functions unique to repeater node
-    // cfg_repeater!(
-    //     pub async fn boot(&mut self) {
-    //         self.boot_tcp_lister()
-    //     }
-    // );
-
-    // // functions unique to responder node
-    // cfg_responder!(
-    //     pub async fn boot(&mut self) {
-    //         // Get performance indicator
-    //         self.request_performance_indicator()
-    //     }
-
-    //     async fn create_ruleset() {}
-    // );
 
     pub async fn boot(&mut self) {
         self.get_performance_indicator();
@@ -147,6 +125,7 @@ where
             while let Some(frame) = frame_reader.next().await {
                 match frame {
                     Ok(data) => {
+                        info!("received data {:?}", data);
                         // received data
                         self.handle_message(&data).await;
                     }
@@ -175,27 +154,47 @@ where
     }
 
     async fn handle_message(&self, data: &BytesMut) {}
+
+    async fn emit_connection_setup_request(
+        &mut self,
+        destination: IpAddr,
+        app_req: ApplicationRequestFormat,
+    ) {
+        // Request next hop information
+        let next_hop = self
+            .routing_daemon
+            .lock()
+            .unwrap()
+            .get_next_hop_interface(destination);
+    }
     /// An interface to the application
     /// The application manipulate this function to start the application
     /// When only the node type is initiator, this function can be executed
     ///
-    async fn forward_connection_setup_request(&self) {
+    async fn forward_connection_setup_request(
+        &self,
+        connection_setup_request: ConnectionSetupRequest,
+    ) {
+        let destination = connection_setup_request.get_destination();
         // Find next hop
         let next_hop_socket_addr = if cfg!(test) {
             todo!("get next hop for testing")
         } else {
-            self.routing_daemon.lock().unwrap().get_next_hop_interface()
+            self.routing_daemon
+                .lock()
+                .unwrap()
+                .get_next_hop_interface(destination)
         };
         // Send connection setup request to next hop
         // Check if there is an existing connection to the next hop or not
-        if let Some(existing_connection) =
-            self.tcp_sockets.lock().unwrap().get(&next_hop_socket_addr)
-        {
-            // Send connection setup request to the next hop
-            // existing_connection.write_all(b"connection setup request").await.unwrap();
-        } else {
-            // Create a new connection to the next hop
-            let mut stream = TcpStream::connect(next_hop_socket_addr).await.unwrap();
+        match self.tcp_sockets.lock().unwrap().get(&next_hop_socket_addr) {
+            Some(existing_connection) => {
+                // Send connection setup request to the next hop;
+            }
+            None => {
+                // Create a new connection to the next hop
+                let mut stream = TcpStream::connect(next_hop_socket_addr).await.unwrap();
+            }
         }
     }
 

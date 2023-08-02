@@ -1,5 +1,10 @@
 use crate::connection_manager::message::message::Message;
+use std::net::IpAddr;
 
 pub(crate) struct Barrier {}
 
-impl Message for Barrier {}
+impl Message for Barrier {
+    fn get_destination(&self) -> IpAddr {
+        unimplemented!()
+    }
+}

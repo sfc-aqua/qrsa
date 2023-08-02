@@ -1,9 +1,10 @@
 use crate::common::resources::ResourceType;
 use core::time::Duration;
+use serde::{Deserialize, Serialize};
 
 /// A format for application to send requirements of generated entanglements
 ///
-#[derive(Default, Debug)]
+#[derive(Default, Debug, Serialize, Deserialize)]
 pub struct ApplicationRequestFormat {
     /// The number of e2e requred
     pub num_pairs: u64,

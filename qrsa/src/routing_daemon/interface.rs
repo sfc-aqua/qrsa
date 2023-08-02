@@ -1,7 +1,7 @@
 use mockall::automock;
-use std::net::SocketAddr;
+use std::net::{IpAddr, SocketAddr};
 
 #[automock]
 pub trait IRoutingDaemon {
-    fn get_next_hop_interface(&self) -> SocketAddr;
+    fn get_next_hop_interface(&self, destination: IpAddr) -> SocketAddr;
 }
