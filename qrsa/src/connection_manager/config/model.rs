@@ -18,4 +18,10 @@ impl CmConfig {
             .get::<CmConfig>("connection_manager")
             .unwrap_or_else(|dee| panic!("Failed to deserialize config into a model. {}", dee))
     }
+
+    pub fn get_host_as_ip_addr(&self) -> std::net::IpAddr {
+        self.host
+            .parse()
+            .unwrap_or_else(|e| panic!("Failed to parse host as IpAddr. {}", e))
+    }
 }

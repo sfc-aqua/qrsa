@@ -1,18 +1,20 @@
-use crate::routing_daemon::interface::IRoutingDaemon;
-use crate::{cfg_initiator, cfg_repeater, cfg_responder, routing_daemon};
 use async_trait::async_trait;
-use serde::__private::de;
 use std::collections::HashMap;
 use std::marker::Send;
 use std::net::{IpAddr, SocketAddr};
 use std::sync::{Arc, Mutex};
 
 use bytes::BytesMut;
+use serde::{Deserialize, Serialize};
+use serde_json::to_string;
+use tokio::io::AsyncWrite;
 use tokio::net::{TcpListener, TcpStream};
+use tokio::sync::RwLock;
 use tokio_serde::{Deserializer, Serializer};
 use tokio_stream::StreamExt;
-use tokio_util::codec::{FramedRead, LengthDelimitedCodec};
+use tokio_util::codec::{FramedRead, FramedWrite, LengthDelimitedCodec};
 use tracing::info;
+use uuid::Uuid;
 
 // use super::IResult;
 use crate::connection_manager::config::model::CmConfig;
@@ -21,6 +23,8 @@ use crate::connection_manager::connection::id::{ApplicationId, ConnectionId};
 use crate::connection_manager::error::ConnectionManagerError;
 use crate::connection_manager::interface::IConnectionManager;
 use crate::connection_manager::message::connection_setup_request::ConnectionSetupRequest;
+use crate::routing_daemon::interface::IRoutingDaemon;
+use crate::{cfg_initiator, cfg_repeater, cfg_responder, routing_daemon};
 
 use crate::common::application_request_format::ApplicationRequestFormat;
 use crate::common::performance_indicator::PerformanceIndicator;
@@ -155,8 +159,10 @@ where
 
     async fn handle_message(&self, data: &BytesMut) {}
 
+    // A function for initiator to create a Connection Setup Request
+    // and forward it to next hop
     async fn emit_connection_setup_request(
-        &mut self,
+        &self,
         destination: IpAddr,
         app_req: ApplicationRequestFormat,
     ) {
@@ -166,7 +172,30 @@ where
             .lock()
             .unwrap()
             .get_next_hop_interface(destination);
+
+        // Generate a random application id.
+        let application_id = Uuid::new_v4();
+
+        match &self.performance_indicator {
+            Some(performance_indicator) => {
+                // Create a connection setup request
+                let connection_setup_request = ConnectionSetupRequest::new(
+                    self.config.get_host_as_ip_addr(),
+                    destination,
+                    application_id,
+                    app_req,
+                    performance_indicator.clone(),
+                );
+                // Forward connection setup request
+                self.forward_connection_setup_request(connection_setup_request)
+                    .await;
+            }
+            None => {
+                panic!("Performance indicator is not ready yet.")
+            }
+        }
     }
+
     /// An interface to the application
     /// The application manipulate this function to start the application
     /// When only the node type is initiator, this function can be executed
@@ -176,6 +205,18 @@ where
         connection_setup_request: ConnectionSetupRequest,
     ) {
         let destination = connection_setup_request.get_destination();
+        self.forward_message_to_next_hop::<ConnectionSetupRequest>(
+            destination,
+            connection_setup_request,
+        )
+        .await;
+    }
+
+    async fn forward_message_to_next_hop<T: Message + Serialize>(
+        &self,
+        destination: IpAddr,
+        message: T,
+    ) {
         // Find next hop
         let next_hop_socket_addr = if cfg!(test) {
             todo!("get next hop for testing")
@@ -185,19 +226,37 @@ where
                 .unwrap()
                 .get_next_hop_interface(destination)
         };
+
+        // Serialize message to json
+        let serialized_data = to_string(&message).expect("Failed to serialize message"); // Prepare error message
+
         // Send connection setup request to next hop
         // Check if there is an existing connection to the next hop or not
-        match self.tcp_sockets.lock().unwrap().get(&next_hop_socket_addr) {
+        match self
+            .tcp_sockets
+            .lock()
+            .unwrap()
+            .get_mut(&next_hop_socket_addr)
+        {
             Some(existing_connection) => {
                 // Send connection setup request to the next hop;
+                let (_, writer) = existing_connection.split();
+                writer.try_write(serialized_data.as_bytes()).unwrap();
             }
             None => {
-                // Create a new connection to the next hop
-                let mut stream = TcpStream::connect(next_hop_socket_addr).await.unwrap();
+                // // Create a new connection to the next hop
+                // Need to solve lifetime issue
+                // let mut stream = TcpStream::connect(next_hop_socket_addr).await.unwrap();
+                // let (_, writer) = stream.split();
+                // writer.try_write(serialized_data.as_bytes()).unwrap();
+                // // Keep tcp stream in the tcp_sockets
+                // self.tcp_sockets
+                //     .lock()
+                //     .unwrap()
+                //     .insert(next_hop_socket_addr, stream);
             }
-        }
+        };
     }
-
     /// Listen to incoming connection setup request
     /// This function wait for request from initiator
     ///
