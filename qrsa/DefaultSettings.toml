@@ -1,0 +1,12 @@
+[connection_manager]
+port = 52244
+host = "0.0.0.0"
+
+[rule_engine]
+port = 52126
+host = "0.0.0.0"
+
+[routind_daemon]
+port = 52279
+host = "0.0.0.0"
+
