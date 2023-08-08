@@ -3,8 +3,9 @@ version: '3.9'
 services:
   controller:
     command: python server.py
+    working_dir: /usr/app
     volumes:
-      - ./controller:/usr/app:ro
+      - ./qrsa_prototype:/usr/app/:rw
     build: ./controller
     ports:
       - 8080
@@ -12,8 +13,9 @@ services:
       - global
   qnode1:
     command: python server.py
+    working_dir: /usr/app
     volumes:
-      - ./qnode:/usr/app:ro
+      - ./qrsa_prototype:/usr/app/:rw
     build: ./qnode
     ports:
       - 8080
@@ -21,13 +23,14 @@ services:
       - global
   qnode2:
     command: python server.py
+    working_dir: /usr/app
     build: ./qnode
     ports:
       - 8080
     networks:
       - global
     volumes:
-      - ./qnode:/usr/app:ro
+      - ./qrsa_prototype:/usr/app/:rw
 
   
 networks:
