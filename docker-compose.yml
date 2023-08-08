@@ -1,0 +1,35 @@
+version: '3.9'
+
+services:
+  controller:
+    command: python server.py
+    volumes:
+      - ./controller:/usr/app:ro
+    build: ./controller
+    ports:
+      - 8080
+    networks:
+      - global
+  qnode1:
+    command: python server.py
+    volumes:
+      - ./qnode:/usr/app:ro
+    build: ./qnode
+    ports:
+      - 8080
+    networks:
+      - global
+  qnode2:
+    command: python server.py
+    build: ./qnode
+    ports:
+      - 8080
+    networks:
+      - global
+    volumes:
+      - ./qnode:/usr/app:ro
+
+  
+networks:
+  global:
+    driver: bridge
