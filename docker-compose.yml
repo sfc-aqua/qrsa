@@ -1,0 +1,38 @@
+version: '3.9'
+
+services:
+  controller:
+    command: python server.py
+    working_dir: /usr/app
+    volumes:
+      - ./qrsa_prototype:/usr/app/:rw
+    build: ./controller
+    ports:
+      - 8080
+    networks:
+      - global
+  qnode1:
+    command: python server.py
+    working_dir: /usr/app
+    volumes:
+      - ./qrsa_prototype:/usr/app/:rw
+    build: ./qnode
+    ports:
+      - 8080
+    networks:
+      - global
+  qnode2:
+    command: python server.py
+    working_dir: /usr/app
+    build: ./qnode
+    ports:
+      - 8080
+    networks:
+      - global
+    volumes:
+      - ./qrsa_prototype:/usr/app/:rw
+
+  
+networks:
+  global:
+    driver: bridge
