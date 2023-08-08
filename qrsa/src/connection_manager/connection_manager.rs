@@ -232,6 +232,7 @@ where
 
         // Send connection setup request to next hop
         // Check if there is an existing connection to the next hop or not
+
         match self
             .tcp_sockets
             .lock()
@@ -242,12 +243,13 @@ where
                 // Send connection setup request to the next hop;
                 let (_, writer) = existing_connection.split();
                 writer.try_write(serialized_data.as_bytes()).unwrap();
-            }
+            },
             None => {
-                // // Create a new connection to the next hop
-                // Need to solve lifetime issue
+                // Create a new connection to the next hop
+                // // Need to solve lifetime issue
                 // let mut stream = TcpStream::connect(next_hop_socket_addr).await.unwrap();
                 // let (_, writer) = stream.split();
+                // writer.try_write(serialized_data.as_bytes()).unwrap();
                 // writer.try_write(serialized_data.as_bytes()).unwrap();
                 // // Keep tcp stream in the tcp_sockets
                 // self.tcp_sockets
