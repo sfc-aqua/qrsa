@@ -10,7 +10,8 @@ services:
     ports:
       - 8080
     networks:
-      - global
+      qrsa_net:
+        ipv4_address: 172.18.0.254
   qnode1:
     command: python server.py
     working_dir: /usr/app
@@ -20,7 +21,8 @@ services:
     ports:
       - 8080
     networks:
-      - global
+      qrsa_net:
+        ipv4_address: 172.18.0.2
   qnode2:
     command: python server.py
     working_dir: /usr/app
@@ -28,11 +30,15 @@ services:
     ports:
       - 8080
     networks:
-      - global
+      qrsa_net:
+        ipv4_address: 172.18.0.3
     volumes:
       - ./qrsa_prototype:/usr/app/:rw
 
   
 networks:
-  global:
+  qrsa_net:
     driver: bridge
+    ipam:
+      config:
+        - subnet: 172.18.0.0/24
