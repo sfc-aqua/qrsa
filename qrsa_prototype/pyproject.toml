@@ -4,6 +4,9 @@ version = "0.1.0"
 description = "Add your description here"
 dependencies = [
     "common",
+    "fastapi>=0.101.0",
+    "uvicorn>=0.23.2",
+    "asyncio>=3.4.3",
 ]
 readme = "README.md"
 requires-python = ">= 3.8"

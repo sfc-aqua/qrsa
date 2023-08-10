@@ -2,7 +2,7 @@ version: '3.9'
 
 services:
   controller:
-    command: python server.py
+    command: rye run python server.py
     working_dir: /usr/app
     volumes:
       - ./qrsa_prototype:/usr/app/:rw
@@ -13,7 +13,7 @@ services:
       qrsa_net:
         ipv4_address: 172.18.0.254
   qnode1:
-    command: python server.py
+    command: rye run python server.py
     working_dir: /usr/app
     volumes:
       - ./qrsa_prototype:/usr/app/:rw
@@ -24,7 +24,7 @@ services:
       qrsa_net:
         ipv4_address: 172.18.0.2
   qnode2:
-    command: python server.py
+    command: rye run python server.py
     working_dir: /usr/app
     build: ./qnode
     ports:
