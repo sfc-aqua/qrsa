@@ -10,9 +10,21 @@ hostname = socket.gethostname()
 ip_address = socket.gethostbyname(hostname)
 
 
-@app.get("/")
-async def root():
+@app.get("/heat_beat")
+async def heart_beat() -> dict:
     return {"message": "Hello World"}
+
+
+@app.post("/connection_setup_request")
+async def handle_connection_setup_request(request):
+    # Deserialize connection setup request
+
+    # Add performance indicator to the request
+
+    # Serialize connection setup request again
+
+    # Send connection setup request to next hop
+    pass
 
 
 if __name__ == "__main__":
