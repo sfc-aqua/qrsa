@@ -7,5 +7,3 @@ RUN apt update -q \
     && bash -c "curl -sSf https://rye-up.com/get | bash" 
 
 WORKDIR /usr/app
-
-RUN ls && rm -rf .venv

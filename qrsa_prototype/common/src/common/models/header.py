@@ -1,4 +1,4 @@
-from typing import Union, Any
+from typing import Union
 from pydantic import BaseModel, Field
 from ipaddress import IPv4Address, IPv6Address
 
@@ -10,11 +10,3 @@ class Header(BaseModel):
     dst: Union[IPv4Address, IPv6Address, str] = Field(
         ..., alias="Destination ip addr of the message"
     )
-
-    def __init__(self):
-        super().__init__()
-        # self.dst = dst
-        # self.src = src
-
-    def __new__(cls) -> Any:
-        return super().__new__(cls)
