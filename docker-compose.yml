@@ -2,13 +2,16 @@ version: '3.9'
 
 services:
   controller:
-    command: python server.py
+    command: tail -f /dev/null
     working_dir: /usr/app
     volumes:
       - ./qrsa_prototype:/usr/app/:rw
+      - ./logs:/usr/app/logs:rw
+      - /var/run/docker.sock:/var/run/docker.sock:rw
+      - ./docker-compose.yml:/usr/app/docker-compose.yml:ro
     build: ./controller
     ports:
-      - 8080
+      - 9002:9002
     networks:
       - global
   qnode1:
@@ -16,6 +19,7 @@ services:
     working_dir: /usr/app
     volumes:
       - ./qrsa_prototype:/usr/app/:rw
+      - ./logs:/usr/app/logs:rw
     build: ./qnode
     ports:
       - 8080
@@ -31,6 +35,7 @@ services:
       - global
     volumes:
       - ./qrsa_prototype:/usr/app/:rw
+      - ./logs:/usr/app/logs:rw
 
   
 networks:

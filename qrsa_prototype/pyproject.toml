@@ -2,7 +2,11 @@
 name = "qrsa_prototype"
 version = "0.1.0"
 description = "Add your description here"
-dependencies = []
+dependencies = [
+    "docker>=6.1.3",
+    "fastapi[a11]>=0.101.0",
+    "uvicorn[standard]>=0.23.2",
+]
 readme = "README.md"
 requires-python = ">= 3.8"
 
@@ -16,3 +20,6 @@ dev-dependencies = []
 
 [tool.hatch.metadata]
 allow-direct-references = true
+
+[tool.rye.scripts]
+monitor = { cmd = "uvicorn main:app --reload --port 9002 --app-dir ./src/monitor" }
