@@ -52,6 +52,7 @@ class QRSAClient:
 if __name__ == "__main__":
     client = QRSAClient()
 
+    # Application will give this information to CM
     app_req = {
         "minimum_fidelity": 0.9,
         "minimum_bell_pair_bandwidth": 100,

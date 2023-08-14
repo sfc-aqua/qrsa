@@ -2,12 +2,13 @@ version: '3.9'
 
 services:
   controller:
-    build: ./controller
-    entrypoint: sh .entrypoints/.controller_entrypoint.sh
+    build:
+      context: ./qrsa_prototype
+      dockerfile: ../controller/Dockerfile
     working_dir: /usr/app
+    command: rye run python src/app/server.py
     volumes:
       - ./qrsa_prototype:/usr/app/:rw
-      - /usr/app/.venv # Not to share .venv over the multiple containers
     ports:
       - 8080
     networks:
@@ -15,28 +16,30 @@ services:
         ipv4_address: 172.18.0.254
   qnode1:
     build: ./qnode
-    entrypoint: sh .entrypoints/.qnode_entrypoint.sh
+    command: rye run python src/app/server.py
     working_dir: /usr/app
     volumes:
       - ./qrsa_prototype:/usr/app/:rw
-      - /usr/app/.venv
     ports:
       - 8080
+    depends_on:
+      - controller
     networks:
       qrsa_net:
         ipv4_address: 172.18.0.2
   qnode2:
     build: ./qnode
-    entrypoint: sh .entrypoints/.qnode_entrypoint.sh
+    command: rye run python src/app/server.py
     working_dir: /usr/app
     ports:
       - 8080
+    depends_on:
+      - controller
     networks:
       qrsa_net:
         ipv4_address: 172.18.0.3
     volumes:
       - ./qrsa_prototype:/usr/app/:rw
-      - /usr/app/.venv
 
   
 networks:
