@@ -8,6 +8,9 @@ services:
     volumes:
       - ./qrsa_prototype:/usr/app/:rw
       - /usr/app/.venv # Not to share .venv over the multiple containers
+      - ./logs:/usr/app/logs:rw
+      - /var/run/docker.sock:/var/run/docker.sock:rw
+      - ./docker-compose.yml:/usr/app/docker-compose.yml:ro
     ports:
       - 8080
     networks:
@@ -20,6 +23,7 @@ services:
     volumes:
       - ./qrsa_prototype:/usr/app/:rw
       - /usr/app/.venv
+      - ./logs:/usr/app/logs:rw
     ports:
       - 8080
     networks:
@@ -37,6 +41,7 @@ services:
     volumes:
       - ./qrsa_prototype:/usr/app/:rw
       - /usr/app/.venv
+      - ./logs:/usr/app/logs:rw
 
   
 networks:
