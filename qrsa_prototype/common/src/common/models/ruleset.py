@@ -11,24 +11,26 @@ class ConditionClause(BaseModel):
 
 
 class Action(BaseModel):
-    clauses: List[ActionClause] = Field(..., alias="List of clauses in this action")
+    clauses: List[ActionClause] = Field(
+        ..., description="List of clauses in this action"
+    )
 
 
 class Condition(BaseModel):
     clauses: List[ConditionClause] = Field(
-        ..., alias="List of clauses in this condition"
+        ..., description="List of clauses in this condition"
     )
 
 
 class Rule(BaseModel):
-    rule_id: int = Field(..., alias="Identifier for this rule")
+    rule_id: int = Field(..., description="Identifier for this rule")
 
 
 class Stage(BaseModel):
-    stage_id: int = Field(..., alias="Identifier for this stage")
-    rules: List[Rule] = Field(..., alias="List of rules in this stage")
+    stage_id: int = Field(..., description="Identifier for this stage")
+    rules: List[Rule] = Field(..., description="List of rules in this stage")
 
 
 class RuleSet(BaseModel):
-    ruleset_id: str = Field(..., alias="Identifier for this ruleset")
-    stages: List[Stage] = Field(..., alias="List of stages in this ruleset")
+    ruleset_id: str = Field(..., description="Identifier for this ruleset")
+    stages: List[Stage] = Field(..., description="List of stages in this ruleset")

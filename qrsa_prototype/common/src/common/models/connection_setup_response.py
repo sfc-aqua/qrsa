@@ -5,7 +5,9 @@ from ruleset import RuleSet
 
 class ConnectionSetupResponse(BaseModel):
     application_id: str = Field(
-        ..., alias="Application Id corresponding to the connection id"
+        ..., description="Application Id corresponding to the connection id"
     )
-    connection_id: str = Field(..., alias="Identifier for this connection")
-    rulesets: List[RuleSet] = Field(..., alias="List of rulesets in this connection")
+    connection_id: str = Field(..., description="Identifier for this connection")
+    rulesets: List[RuleSet] = Field(
+        ..., description="List of rulesets in this connection"
+    )

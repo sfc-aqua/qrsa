@@ -7,10 +7,10 @@ ApplicationId = NewType("ApplicationId", str)
 
 
 class ConnectionSetupRequest(BaseModel):
-    header: Header = Field(..., alias="Header of the message")
+    header: Header = Field(..., description="Header of the message")
     application_id: ApplicationId = Field(
-        ..., alias="Application Id which while connection id is not ready"
+        ..., description="Application Id which while connection id is not ready"
     )
     application_performance_request: ApplicationPerformanceRequest = Field(
-        ..., alias="The performance requirements for this application."
+        ..., description="The performance requirements for this application."
     )

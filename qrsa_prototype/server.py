@@ -18,6 +18,7 @@ async def heart_beat() -> dict:
 @app.post("/connection_setup_request")
 async def handle_connection_setup_request(request):
     # Deserialize connection setup request
+    print(request)
 
     # Add performance indicator to the request
 
@@ -28,4 +29,4 @@ async def handle_connection_setup_request(request):
 
 
 if __name__ == "__main__":
-    uvicorn.run(app=app, host=ip_address, port=8080)
+    uvicorn.run("server:app", host=ip_address, port=8080, reload=True)

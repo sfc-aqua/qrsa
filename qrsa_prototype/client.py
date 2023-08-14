@@ -36,18 +36,24 @@ class QRSAClient:
             "application_id": application_id,
             "application_performance_request": application_perofrmance_request,
         }
+
         csr = ConnectionSetupRequest(**csr_contents)
 
         # TODO: Get next hop from routing table
         next_hop = IPv4Address("172.18.0.3")
         # Serialize connection setup request
-        csr_json = csr.json()
+        csr_json = csr.model_dump_json()
         requests.post(f"http://{next_hop}:8080/connection_setup_request", csr_json)
 
 
 if __name__ == "__main__":
     client = QRSAClient()
 
+    app_req = {
+        "minimum_fidelity": 0.9,
+        "minimum_bell_pair_bandwidth": 100,
+    }
+
     client.send_connection_setup_request(
-        IPv4Address("172.18.0.3"), ApplicationPerformanceRequest(1, 1)
+        IPv4Address("172.18.0.3"), ApplicationPerformanceRequest(**app_req)
     )
