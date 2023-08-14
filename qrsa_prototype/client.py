@@ -43,7 +43,10 @@ class QRSAClient:
         next_hop = IPv4Address("172.18.0.3")
         # Serialize connection setup request
         csr_json = csr.model_dump_json()
-        requests.post(f"http://{next_hop}:8080/connection_setup_request", csr_json)
+        requests.post(
+            f"http://{next_hop}:8080/connection_setup_request",
+            data=csr_json,
+            headers={"Content-Type": "application/json"})
 
 
 if __name__ == "__main__":

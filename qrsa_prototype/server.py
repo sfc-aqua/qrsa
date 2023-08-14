@@ -1,7 +1,10 @@
-# from http.server import HTTPServer, BaseHTTPRequestHandler
-import uvicorn
-from fastapi import FastAPI
 import socket
+import uvicorn
+from typing import Any
+from fastapi import FastAPI
+
+from common.models.connection_setup_request import ConnectionSetupRequest
+
 
 
 app = FastAPI()
@@ -11,12 +14,12 @@ ip_address = socket.gethostbyname(hostname)
 
 
 @app.get("/heat_beat")
-async def heart_beat() -> dict:
-    return {"message": "Hello World"}
+def heart_beat() -> dict:
+    return {"message": "Alive"}
 
 
 @app.post("/connection_setup_request")
-async def handle_connection_setup_request(request):
+def handle_connection_setup_request(request: ConnectionSetupRequest) -> dict:
     # Deserialize connection setup request
     print(request)
 
@@ -25,7 +28,7 @@ async def handle_connection_setup_request(request):
     # Serialize connection setup request again
 
     # Send connection setup request to next hop
-    pass
+    return {"message": "Hello World", "contents": str(request)}
 
 
 if __name__ == "__main__":
