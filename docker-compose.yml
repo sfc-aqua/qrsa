@@ -2,31 +2,32 @@ version: '3.9'
 
 services:
   controller:
-    command: rye run python server.py
+    build: ./controller
+    entrypoint: sh .entrypoints/.controller_entrypoint.sh
     working_dir: /usr/app
     volumes:
       - ./qrsa_prototype:/usr/app/:rw
-    build: ./controller
+    tty: true
     ports:
       - 8080
     networks:
       qrsa_net:
         ipv4_address: 172.18.0.254
   qnode1:
-    command: rye run python server.py
+    build: ./qnode
+    entrypoint: sh .entrypoints/.qnode_entrypoint.sh
     working_dir: /usr/app
     volumes:
       - ./qrsa_prototype:/usr/app/:rw
-    build: ./qnode
     ports:
       - 8080
     networks:
       qrsa_net:
         ipv4_address: 172.18.0.2
   qnode2:
-    command: rye run python server.py
-    working_dir: /usr/app
     build: ./qnode
+    entrypoint: sh .entrypoints/.qnode_entrypoint.sh
+    working_dir: /usr/app
     ports:
       - 8080
     networks:

@@ -28,19 +28,15 @@ class QRSAClient:
         # Generate random application id
         application_id = str(uuid.uuid4())
         # Create connection setup request
-        # csr_contents = {
-        #     "src": ipaddress.ip_address(ip_address),
-        #     "dst": destination,
-        #     "application_id": application_id,
-        #     "application_performance_request": application_perofrmance_request,
-        # }
-        csr = ConnectionSetupRequest(
-            src=ipaddress.ip_address(ip_address),
-            dst=destination,
-            application_id=application_id,
-            application_performance_request=application_perofrmance_request,    
-        )
-
+        csr_contents = {
+            "header": {
+                "src": ipaddress.ip_address(ip_address),
+                "dst": destination,
+            },
+            "application_id": application_id,
+            "application_performance_request": application_perofrmance_request,
+        }
+        csr = ConnectionSetupRequest(**csr_contents)
 
         # TODO: Get next hop from routing table
         next_hop = IPv4Address("172.18.0.3")
