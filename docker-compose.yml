@@ -51,6 +51,22 @@ services:
       - ./qrsa_prototype:/usr/app/:rw
       - /usr/app/.venv
       - ./logs:/usr/app/logs:rw
+  qnode3:
+    build:
+      context: ./qrsa_prototype
+      dockerfile: ./Dockerfile
+      target: base
+    command: rye run python src/app/server.py
+    working_dir: /usr/app
+    ports:
+      - 8080
+    networks:
+      qrsa_net:
+        ipv4_address: 172.18.0.4
+    volumes:
+      - ./qrsa_prototype:/usr/app/:rw
+      - /usr/app/.venv
+      - ./logs:/usr/app/logs:rw
 
   
 networks:
