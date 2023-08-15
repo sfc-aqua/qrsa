@@ -7,15 +7,16 @@ services:
       dockerfile: ./Dockerfile
       target: controller
     working_dir: /usr/app
-    command: rye run python src/app/server.py
+    # command: rye run python src/controller/main.py
+    command: tail -f /dev/null
     volumes:
       - ./qrsa_prototype:/usr/app/:rw
       - /usr/app/.venv # Not to share .venv over the multiple containers
       - ./logs:/usr/app/logs:rw
       - /var/run/docker.sock:/var/run/docker.sock:rw
-      - ./docker-compose.yml:/usr/app/docker-compose.yml:ro
     ports:
       - 8080
+      - 9000:9000
     networks:
       qrsa_net:
         ipv4_address: 172.18.0.254
