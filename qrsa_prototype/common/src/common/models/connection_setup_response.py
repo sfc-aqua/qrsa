@@ -1,6 +1,7 @@
 from typing import List
 from pydantic import BaseModel, Field
-from ruleset import RuleSet
+
+from common.models.ruleset import RuleSet
 
 
 class ConnectionSetupResponse(BaseModel):
