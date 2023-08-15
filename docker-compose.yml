@@ -9,6 +9,10 @@ services:
     command: rye run python src/app/server.py
     volumes:
       - ./qrsa_prototype:/usr/app/:rw
+      - /usr/app/.venv # Not to share .venv over the multiple containers
+      - ./logs:/usr/app/logs:rw
+      - /var/run/docker.sock:/var/run/docker.sock:rw
+      - ./docker-compose.yml:/usr/app/docker-compose.yml:ro
     ports:
       - 8080
     networks:
@@ -20,6 +24,8 @@ services:
     working_dir: /usr/app
     volumes:
       - ./qrsa_prototype:/usr/app/:rw
+      - /usr/app/.venv
+      - ./logs:/usr/app/logs:rw
     ports:
       - 8080
     depends_on:
@@ -40,6 +46,8 @@ services:
         ipv4_address: 172.18.0.3
     volumes:
       - ./qrsa_prototype:/usr/app/:rw
+      - /usr/app/.venv
+      - ./logs:/usr/app/logs:rw
 
   
 networks:
