@@ -46,7 +46,8 @@ class QRSAClient:
         requests.post(
             f"http://{next_hop}:8080/connection_setup_request",
             data=csr_json,
-            headers={"Content-Type": "application/json"})
+            headers={"Content-Type": "application/json"},
+        )
 
 
 if __name__ == "__main__":
