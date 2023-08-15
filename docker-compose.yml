@@ -4,7 +4,8 @@ services:
   controller:
     build:
       context: ./qrsa_prototype
-      dockerfile: ../controller/Dockerfile
+      dockerfile: ./Dockerfile
+      target: controller
     working_dir: /usr/app
     command: rye run python src/app/server.py
     volumes:
@@ -21,7 +22,8 @@ services:
   qnode1:
     build:
       context: ./qrsa_prototype
-      dockerfile: ../qnode/Dockerfile
+      dockerfile: ./Dockerfile
+      target: base
     command: rye run python src/app/server.py
     working_dir: /usr/app
     volumes:
@@ -36,7 +38,8 @@ services:
   qnode2:
     build:
       context: ./qrsa_prototype
-      dockerfile: ../qnode/Dockerfile
+      dockerfile: ./Dockerfile
+      target: base
     command: rye run python src/app/server.py
     working_dir: /usr/app
     ports:
