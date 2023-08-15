@@ -1,7 +1,7 @@
 import socket
 import uvicorn
-from typing import Annotated
 from fastapi import FastAPI, Depends
+from dependency_injector.wiring import inject, Provide
 
 from common.models.connection_setup_request import ConnectionSetupRequest
 from common.models.connection_setup_response import ConnectionSetupResponse
@@ -10,6 +10,7 @@ from common.models.connection_setup_reject import ConnectionSetupReject
 from connection_manager.connection_manager import ConnectionManager
 from hardware_monitor.hardware_monitor import HardwareMonitor
 from routing_daemon.routing_daemon import RoutingDaemon
+from containers import Container
 
 app = FastAPI()
 
@@ -23,11 +24,14 @@ async def heart_beat() -> dict:
 
 
 @app.post("/connection_setup_request")
+@inject
 async def handle_connection_setup_request(
     request: ConnectionSetupRequest,
-    connection_manager: Annotated[ConnectionManager, Depends(ConnectionManager)],
-    hardware_monitor: Annotated[HardwareMonitor, Depends(HardwareMonitor)],
-    routing_daemon: Annotated[RoutingDaemon, Depends(RoutingDaemon)],
+    connection_manager: ConnectionManager = Depends(
+        Provide(Container.connection_manager)
+    ),
+    hardware_monitor: HardwareMonitor = Depends(Provide(Container.hardware_monitor)),
+    routing_daemon: RoutingDaemon = Depends(Provide(Container.routing_daemon)),
 ) -> dict:
     """
     Experimental function to handle connection setup requests
