@@ -1,4 +1,4 @@
-from common.model.performance_indicator import PerformanceIndicator
+from common.models.performance_indicator import PerformanceIndicator
 
 
 class HardwareMonitor:
