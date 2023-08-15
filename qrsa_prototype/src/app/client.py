@@ -2,12 +2,14 @@ import socket
 import uuid
 import requests
 import ipaddress
-from typing import Union, List
+from typing import Union, List, Annotated
 from ipaddress import IPv4Address, IPv6Address
-from fastapi import FastAPI
+from fastapi import FastAPI, Depends
 
 from common.models.connection_setup_request import ConnectionSetupRequest
 from common.models.application_performance_request import ApplicationPerformanceRequest
+
+from hardware_monitor.hardware_monitor import HardwareMonitor
 
 app = FastAPI()
 
@@ -24,9 +26,12 @@ class QRSAClient:
         self,
         destination: Union[IPv4Address, IPv6Address],
         application_perofrmance_request: ApplicationPerformanceRequest,
+        hardware_monitor: Annotated[HardwareMonitor, Depends(HardwareMonitor)],
     ):
         # Generate random application id
         application_id = str(uuid.uuid4())
+        # Get the latest hardware perofrmance indicator
+        performance_indicator = hardware_monitor.get_performance_indicator()
         # Create connection setup request
         csr_contents = {
             "header": {
@@ -35,6 +40,7 @@ class QRSAClient:
             },
             "application_id": application_id,
             "application_performance_request": application_perofrmance_request,
+            "performance_indicators": [performance_indicator],
         }
 
         csr = ConnectionSetupRequest(**csr_contents)
