@@ -9,6 +9,8 @@ from rule_engine.rule_engine import RuleEngine
 class Container(containers.DeclarativeContainer):
     """
     A container class for dependency injections
+
+    This is not thread safe. If the thread safety is needed, use ThreadSafeSingleton.
     """
 
     config = providers.Configuration()
