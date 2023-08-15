@@ -19,7 +19,9 @@ services:
       qrsa_net:
         ipv4_address: 172.18.0.254
   qnode1:
-    build: ./qnode
+    build:
+      context: ./qrsa_prototype
+      dockerfile: ../qnode/Dockerfile
     command: rye run python src/app/server.py
     working_dir: /usr/app
     volumes:
@@ -28,19 +30,17 @@ services:
       - ./logs:/usr/app/logs:rw
     ports:
       - 8080
-    depends_on:
-      - controller
     networks:
       qrsa_net:
         ipv4_address: 172.18.0.2
   qnode2:
-    build: ./qnode
+    build:
+      context: ./qrsa_prototype
+      dockerfile: ../qnode/Dockerfile
     command: rye run python src/app/server.py
     working_dir: /usr/app
     ports:
       - 8080
-    depends_on:
-      - controller
     networks:
       qrsa_net:
         ipv4_address: 172.18.0.3
