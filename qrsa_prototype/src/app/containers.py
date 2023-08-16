@@ -13,12 +13,10 @@ class Container(containers.DeclarativeContainer):
     This is not thread safe. If the thread safety is needed, use ThreadSafeSingleton.
     """
 
+    wiring_config = containers.WiringConfiguration(modules=["endpoints"])
     config = providers.Configuration()
 
     connection_manager = providers.Singleton(ConnectionManager)
-
     hardware_monitor = providers.Singleton(HardwareMonitor)
-
     routing_daemon = providers.Singleton(RoutingDaemon)
-
     rule_engine = providers.Singleton(RuleEngine)

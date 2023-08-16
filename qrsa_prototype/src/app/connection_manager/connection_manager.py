@@ -4,7 +4,7 @@ from ipaddress import IPv4Address, IPv6Address
 from common.models.ruleset import RuleSet
 from common.models.connection_setup_request import ConnectionSetupRequest
 from common.models.performance_indicator import PerformanceIndicator
-from connection_manager.ruleset_factory import RuleSetFactory
+from .ruleset_factory import RuleSetFactory
 
 
 class ConnectionManager:
@@ -20,7 +20,7 @@ class ConnectionManager:
         This function distributes RuleSets to intermediate nodes.
 
         """
-        self.running_connection.push(request)
+        self.running_connection.append(request)
         print(self.running_connection)
         return {"test": "test"}
 

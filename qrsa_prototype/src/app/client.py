@@ -2,14 +2,15 @@ import socket
 import uuid
 import requests
 import ipaddress
-from typing import Union, List, Annotated
+from typing import Union, List
 from ipaddress import IPv4Address, IPv6Address
-from fastapi import FastAPI, Depends
+from fastapi import FastAPI
+from dependency_injector.wiring import inject
 
 from common.models.connection_setup_request import ConnectionSetupRequest
 from common.models.application_performance_request import ApplicationPerformanceRequest
+from common.models.performance_indicator import PerformanceIndicator
 
-from hardware_monitor.hardware_monitor import HardwareMonitor
 
 app = FastAPI()
 
@@ -22,16 +23,17 @@ class QRSAClient:
         self.pending_connection: List[str] = []
 
     # Application will use this function to start entire connection setup process
+    @inject
     def send_connection_setup_request(
         self,
         destination: Union[IPv4Address, IPv6Address],
         application_perofrmance_request: ApplicationPerformanceRequest,
-        hardware_monitor: Annotated[HardwareMonitor, Depends(HardwareMonitor)],
     ):
         # Generate random application id
         application_id = str(uuid.uuid4())
         # Get the latest hardware perofrmance indicator
-        performance_indicator = hardware_monitor.get_performance_indicator()
+        # performance_indicator = hardware_monitor.get_performance_indicator()
+        performance_indicator = PerformanceIndicator(**{"local_op_fidelity": 0.99})
         # Create connection setup request
         csr_contents = {
             "header": {
@@ -40,7 +42,7 @@ class QRSAClient:
             },
             "application_id": application_id,
             "application_performance_request": application_perofrmance_request,
-            "performance_indicators": [performance_indicator],
+            "performance_indicators": {ip_address: performance_indicator},
         }
 
         csr = ConnectionSetupRequest(**csr_contents)
