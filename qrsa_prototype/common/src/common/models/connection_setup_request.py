@@ -1,4 +1,4 @@
-from typing import NewType, Dict, Union
+from typing import NewType, Dict, Union, List
 from pydantic import Field, BaseModel
 from ipaddress import IPv4Address, IPv6Address
 
@@ -18,5 +18,8 @@ class ConnectionSetupRequest(BaseModel):
         ..., description="The performance requirements for this application."
     )
     performance_indicators: Dict[
-        Union[IPv4Address, IPv6Address], PerformanceIndicator
+        Union[IPv4Address, IPv6Address, str], PerformanceIndicator
     ] = Field(..., description="The performance indicators for ruleset construction.")
+    host_list: List[Union[IPv4Address, IPv6Address, str]] = Field(
+        ..., description="The list of hosts in the path."
+    )

@@ -32,6 +32,7 @@ async def handle_connection_setup_request(
     ),
     hardware_monitor: HardwareMonitor = Depends(Provide[Container.hardware_monitor]),
     routing_daemon: RoutingDaemon = Depends(Provide[Container.routing_daemon]),
+    rule_engine: RuleEngine = Depends(Provide[Container.rule_engine]),
 ) -> dict:
     """
     Experimental function to handle connection setup requests
@@ -44,7 +45,10 @@ async def handle_connection_setup_request(
     if ip_address == request.header.dst:
         # This node is the final destination
         # Create RuleSet and send back
-        await connection_manager.respond_to_connection_setup_request(request)
+        responder_ruleset = (
+            await connection_manager.respond_to_connection_setup_request(request)
+        )
+        rule_engine.accept_ruleset(responder_ruleset)
         return {"message": "Received connection setup request"}
 
     # The final destination is not this node
@@ -72,18 +76,18 @@ async def handle_connection_setup_response(
     :param response: ConnectionSetupResponse
     :return: dict
     """
-    if ip_address == response.header.dst:
-        # This node is the final destination
-        # Create RuleSet and send back
-        # Application Id can be used to identify the application
-        connection_manager.link_connection_id_to_application_id(
-            response.application_id, response.connection_id
-        )
-        rule_engine.accept_ruleset(response)
-        return {"message": "Received connection setup response"}
+    # Unpack the response and unpack response to get ruleset
+    connection_manager.link_connection_id_to_application_id(
+        response.application_id, response.connection_id
+    )
+    # Get proposed lau from rule engine based on current running ruleset
+    next_proposed_lau = rule_engine.accept_ruleset(response)
+
+    connection_manager.send_lau_update(next_proposed_lau)
+    return {"message": "Received connection setup response"}
+
     #  forward to next hop?
     # response may not need to be forwarded manually
-    return {"message": "Received connection setup response"}
 
 
 @router.post("/connection_setup_reject")
