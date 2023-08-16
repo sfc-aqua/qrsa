@@ -16,7 +16,7 @@ class Container(containers.DeclarativeContainer):
     wiring_config = containers.WiringConfiguration(
         modules=["endpoints", "client"],
     )
-    config = providers.Configuration()
+    config = providers.Configuration("config")
 
     connection_manager = providers.Singleton(ConnectionManager)
     hardware_monitor = providers.Singleton(HardwareMonitor)

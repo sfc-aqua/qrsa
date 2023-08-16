@@ -1,7 +1,6 @@
-import socket
+from typing import Any
 from fastapi import APIRouter, Depends
 from dependency_injector.wiring import inject, Provide
-
 from common.models.connection_setup_request import ConnectionSetupRequest
 from common.models.connection_setup_response import ConnectionSetupResponse
 from common.models.connection_setup_reject import ConnectionSetupReject
@@ -14,8 +13,8 @@ from rule_engine.rule_engine import RuleEngine
 
 router = APIRouter()
 
-hostname = socket.gethostname()
-ip_address = socket.gethostbyname(hostname)
+# hostname = socket.gethostname()
+# ip_address = socket.gethostbyname(hostname)
 
 
 @router.get("/heat_beat")
@@ -33,6 +32,7 @@ async def handle_connection_setup_request(
     hardware_monitor: HardwareMonitor = Depends(Provide[Container.hardware_monitor]),
     routing_daemon: RoutingDaemon = Depends(Provide[Container.routing_daemon]),
     rule_engine: RuleEngine = Depends(Provide[Container.rule_engine]),
+    config: Any = Depends(Provide[Container.config]),
 ) -> dict:
     """
     Experimental function to handle connection setup requests
@@ -42,7 +42,7 @@ async def handle_connection_setup_request(
     In the future, we may want to communicate over a different protocol
     as they are implemented on routers or repeaters.
     """
-    if ip_address == request.header.dst:
+    if config.ip_address == request.header.dst:
         # This node is the final destination
         # Create RuleSet and send back
         responder_ruleset = (
