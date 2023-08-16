@@ -10,7 +10,8 @@ from .ruleset_factory import RuleSetFactory
 class ConnectionManager:
     def __init__(self):
         self.ruleset_factory = RuleSetFactory()
-        self.running_connection = []
+        # application id -> connection id
+        self.running_connection = {}
 
     async def respond_to_connection_setup_request(
         self, request: ConnectionSetupRequest
@@ -20,9 +21,17 @@ class ConnectionManager:
         This function distributes RuleSets to intermediate nodes.
 
         """
-        self.running_connection.append(request)
+        # Connection id is filled when the connection setup response is received
+        self.running_connection[request.application_id] = None
         print(self.running_connection)
         return {"test": "test"}
+
+    def link_connection_id_to_application_id(self,
+                                             application_id: str,
+                                             connection_id: str):
+        if application_id not in self.running_connection:
+            raise ValueError(f"Application id {application_id} not found")
+        self.running_connection[application_id] = connection_id
 
     async def forward_connection_setup_request(
         self,

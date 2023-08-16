@@ -4,15 +4,12 @@ import requests
 import ipaddress
 from typing import Union, List
 from ipaddress import IPv4Address, IPv6Address
-from fastapi import FastAPI
 from dependency_injector.wiring import inject
 
 from common.models.connection_setup_request import ConnectionSetupRequest
 from common.models.application_performance_request import ApplicationPerformanceRequest
 from common.models.performance_indicator import PerformanceIndicator
 
-
-app = FastAPI()
 
 hostname = socket.gethostname()
 ip_address = socket.gethostbyname(hostname)

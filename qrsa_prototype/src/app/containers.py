@@ -13,7 +13,9 @@ class Container(containers.DeclarativeContainer):
     This is not thread safe. If the thread safety is needed, use ThreadSafeSingleton.
     """
 
-    wiring_config = containers.WiringConfiguration(modules=["endpoints"])
+    wiring_config = containers.WiringConfiguration(
+        modules=["endpoints", "client"],
+    )
     config = providers.Configuration()
 
     connection_manager = providers.Singleton(ConnectionManager)

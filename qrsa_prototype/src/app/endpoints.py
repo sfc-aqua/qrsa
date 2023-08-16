@@ -10,7 +10,7 @@ from containers import Container
 from connection_manager.connection_manager import ConnectionManager
 from hardware_monitor.hardware_monitor import HardwareMonitor
 from routing_daemon.routing_daemon import RoutingDaemon
-
+from rule_engine.rule_engine import RuleEngine
 
 router = APIRouter()
 
@@ -43,8 +43,7 @@ async def handle_connection_setup_request(
     """
     if ip_address == request.header.dst:
         # This node is the final destination
-        # Create RuleSet
-        print(connection_manager, dir(connection_manager))
+        # Create RuleSet and send back
         await connection_manager.respond_to_connection_setup_request(request)
         return {"message": "Received connection setup request"}
 
@@ -60,7 +59,30 @@ async def handle_connection_setup_request(
 
 
 @router.post("/connection_setup_response")
-async def handle_connection_setup_response(response: ConnectionSetupResponse):
+@inject
+async def handle_connection_setup_response(
+    response: ConnectionSetupResponse,
+    connection_manager: ConnectionManager = Depends(
+        Provide[Container.connection_manager]
+    ),
+    rule_engine: RuleEngine = Depends(Provide[Container.rule_engine]),
+) -> dict:
+    """
+    Experimental function to handle connection setup responses
+    :param response: ConnectionSetupResponse
+    :return: dict
+    """
+    if ip_address == response.header.dst:
+        # This node is the final destination
+        # Create RuleSet and send back
+        # Application Id can be used to identify the application
+        connection_manager.link_connection_id_to_application_id(
+            response.application_id, response.connection_id
+        )
+        rule_engine.accept_ruleset(response)
+        return {"message": "Received connection setup response"}
+    #  forward to next hop?
+    # response may not need to be forwarded manually
     return {"message": "Received connection setup response"}
 
 
