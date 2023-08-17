@@ -27,6 +27,8 @@ managed = true
 dev-dependencies = [
     "black>=23.7.0",
     "pytest>=7.4.0",
+    "pytest-mock>=3.11.1",
+    "httpx>=0.24.1",
 ]
 
 [tool.hatch.metadata]

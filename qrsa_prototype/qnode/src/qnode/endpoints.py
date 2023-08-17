@@ -1,9 +1,11 @@
 from typing import Any
 from fastapi import APIRouter, Depends
 from dependency_injector.wiring import inject, Provide
+
 from common.models.connection_setup_request import ConnectionSetupRequest
 from common.models.connection_setup_response import ConnectionSetupResponse
 from common.models.connection_setup_reject import ConnectionSetupReject
+from common.models.response import BaseResponse
 
 from .containers import Container
 from .connection_manager.connection_manager import ConnectionManager
@@ -14,8 +16,8 @@ from .rule_engine.rule_engine import RuleEngine
 router = APIRouter()
 
 
-@router.get("/heat_beat")
-async def heart_beat() -> dict:
+@router.get("/heatbeat")
+async def heartbeat() -> BaseResponse:
     return {"message": "Alive"}
 
 
