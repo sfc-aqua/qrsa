@@ -57,7 +57,10 @@ def base_hosts() -> List[str]:
 
 @pytest.fixture
 def base_connection_setup_request(
-    base_header, base_app_performance_requirement
+    base_header,
+    base_app_performance_requirement,
+    base_hosts,
+    base_performance_indicators,
 ) -> ConnectionSetupRequest:
     host_list = base_hosts(2)
     performance_indicators = {

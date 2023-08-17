@@ -7,6 +7,7 @@ class RoutingDaemon:
         pass
 
     def get_next_hop(
+        self,
         destination: Union[IPv4Address, IPv6Address]
     ) -> Union[IPv4Address, IPv6Address]:
         pass

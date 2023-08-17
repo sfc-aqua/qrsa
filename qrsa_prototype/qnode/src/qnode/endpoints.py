@@ -42,7 +42,7 @@ async def handle_connection_setup_request(
     In the future, we may want to communicate over a different protocol
     as they are implemented on routers or repeaters.
     """
-    if config.ip_address == request.header.dst:
+    if config["ip_address"] == request.header.dst:
         # This node is the final destination
         # Create RuleSet and send back
         responder_ruleset = (
