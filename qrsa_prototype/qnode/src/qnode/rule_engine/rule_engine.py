@@ -1,7 +1,7 @@
 from typing import Dict
 from common.models.ruleset import RuleSet
 
-from rule_engine.ruleset_runtime import RuleSetRuntime
+from .ruleset_runtime import RuleSetRuntime
 
 
 class RuleEngine:

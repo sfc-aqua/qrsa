@@ -16,6 +16,7 @@ RUN --mount=type=bind,source=pyproject.toml,target=pyproject.toml \
     --mount=type=bind,source=README.md,target=README.md\
     --mount=type=bind,source=common,target=common \
     --mount=type=bind,source=controller,target=controller\
+    --mount=type=bind,source=qnode,target=qnode \
     rye sync -f --no-lock \
     && echo PS1=\"'\[\e[1;34m\][\u@$(hostname -i)(base) \W]\\$ \[\e[m\]'\" >> ~/.bashrc
 

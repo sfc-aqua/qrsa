@@ -25,7 +25,7 @@ services:
       context: ./qrsa_prototype
       dockerfile: ./Dockerfile
       target: base
-    command: rye run python src/app/server.py
+    command: rye run python src/qnode/main.py
     working_dir: /usr/app
     volumes:
       - ./qrsa_prototype:/usr/app/:rw
@@ -41,7 +41,7 @@ services:
       context: ./qrsa_prototype
       dockerfile: ./Dockerfile
       target: base
-    command: rye run python src/app/server.py
+    command: rye run python src/qnode/main.py
     working_dir: /usr/app
     ports:
       - 8080
@@ -57,7 +57,7 @@ services:
       context: ./qrsa_prototype
       dockerfile: ./Dockerfile
       target: base
-    command: rye run python src/app/server.py
+    command: rye run python src/qnode/main.py
     working_dir: /usr/app
     ports:
       - 8080

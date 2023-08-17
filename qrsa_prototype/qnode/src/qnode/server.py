@@ -1,11 +1,8 @@
 import socket
-import uvicorn
 from fastapi import FastAPI
 
-from endpoints import router
-from containers import Container
-
-app = FastAPI()
+from .endpoints import router
+from .containers import Container
 
 
 def create_server() -> FastAPI:
@@ -27,10 +24,4 @@ def generate_config() -> None:
     return config
 
 
-app = create_server()
-
-
-if __name__ == "__main__":
-    hostname = socket.gethostname()
-    ip_address = socket.gethostbyname(hostname)
-    uvicorn.run("server:app", host=ip_address, port=8080, reload=True)
+# app = create_server()

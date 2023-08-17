@@ -1,9 +1,9 @@
 from dependency_injector import containers, providers
 
-from connection_manager.connection_manager import ConnectionManager
-from hardware_monitor.hardware_monitor import HardwareMonitor
-from routing_daemon.routing_daemon import RoutingDaemon
-from rule_engine.rule_engine import RuleEngine
+from .connection_manager.connection_manager import ConnectionManager
+from .hardware_monitor.hardware_monitor import HardwareMonitor
+from .routing_daemon.routing_daemon import RoutingDaemon
+from .rule_engine.rule_engine import RuleEngine
 
 
 class Container(containers.DeclarativeContainer):
@@ -14,12 +14,12 @@ class Container(containers.DeclarativeContainer):
     """
 
     wiring_config = containers.WiringConfiguration(
-        modules=["endpoints", "client"],
+        modules=[".endpoints", ".client"],
         packages=[
-            "connection_manager",
-            "hardware_monitor",
-            "routing_daemon",
-            "rule_engine",
+            ".connection_manager",
+            ".hardware_monitor",
+            ".routing_daemon",
+            ".rule_engine",
         ],
     )
     config = providers.Configuration("config")

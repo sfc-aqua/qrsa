@@ -80,13 +80,16 @@ class ConnectionManager:
         }
 
         # Create a new request based  on forward request
-        new_request_json = ConnectionSetupRequest(**{
-            "header": given_request.header,
-            "appliaction_id": given_request.application_id,
-            "app_performance_requirement": given_request.app_performance_requirement,
-            "performance_indicator": given_request.performance_indicator,
-            "hosts": given_request.hosts.append(ip_address),
-        }).model_dump_json()
+        app_req = given_request.app_performance_requirement
+        new_request_json = ConnectionSetupRequest(
+            **{
+                "header": given_request.header,
+                "appliaction_id": given_request.application_id,
+                "app_performance_requirement": app_req,
+                "performance_indicator": given_request.performance_indicator,
+                "hosts": given_request.hosts.append(ip_address),
+            }
+        ).model_dump_json()
 
         # Send request to next hop
         requests.post(
