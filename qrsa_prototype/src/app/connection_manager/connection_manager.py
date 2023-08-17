@@ -2,6 +2,7 @@ import socket
 import requests
 from typing import Union, Dict
 from ipaddress import IPv4Address, IPv6Address
+from dependency_injector.providers import Configuration
 
 from common.models.ruleset import RuleSet
 from common.models.connection_setup_request import ConnectionSetupRequest
@@ -14,7 +15,13 @@ ip_address = socket.gethostbyname(hostname)
 
 
 class ConnectionManager:
-    def __init__(self):
+    def __init__(self, config: Configuration):
+        """
+        Constructor for ConnectionManager
+
+        config is set in Container.
+        """
+        self.config = config
         self.ruleset_factory = RuleSetFactory()
         # application_id -> connection_id
         self.application_id_to_connection_id: Dict[str, str] = {}
@@ -56,6 +63,7 @@ class ConnectionManager:
         """
         Forward a received connection setup to next hop
         """
+        # Store information about this connection
         connection_meta = ConnectionMeta(
             prev_hop=given_request.hosts[-1],
             next_hop=next_hop,
@@ -66,17 +74,23 @@ class ConnectionManager:
         # this connection meta is moved to running connections
         self.pending_connections[given_request.application_id] = connection_meta
 
-        given_request.performance_indicator |= {ip_address: performance_indicator}
-        application_request = given_request.application_performance_request
-        new_request = {
+        # Append this node's performance indicator to the request
+        given_request.performance_indicator |= {
+            self.config.ip_address: performance_indicator
+        }
+
+        # Create a new request based  on forward request
+        new_request_json = ConnectionSetupRequest(**{
             "header": given_request.header,
             "appliaction_id": given_request.application_id,
-            "application_perofmance_request": application_request,
+            "app_performance_requirement": given_request.app_performance_requirement,
             "performance_indicator": given_request.performance_indicator,
             "hosts": given_request.hosts.append(ip_address),
-        }
+        }).model_dump_json()
+
+        # Send request to next hop
         requests.post(
             f"https://{next_hop}:8080/connection_setup_request",
-            data=new_request.model_dump_json(),
+            data=new_request_json,
             headers={"Content-Type": "application/json"},
         )

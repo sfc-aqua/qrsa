@@ -13,9 +13,6 @@ from rule_engine.rule_engine import RuleEngine
 
 router = APIRouter()
 
-# hostname = socket.gethostname()
-# ip_address = socket.gethostbyname(hostname)
-
 
 @router.get("/heat_beat")
 async def heart_beat() -> dict:

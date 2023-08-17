@@ -15,10 +15,19 @@ class Container(containers.DeclarativeContainer):
 
     wiring_config = containers.WiringConfiguration(
         modules=["endpoints", "client"],
+        packages=[
+            "connection_manager",
+            "hardware_monitor",
+            "routing_daemon",
+            "rule_engine",
+        ],
     )
     config = providers.Configuration("config")
 
-    connection_manager = providers.Singleton(ConnectionManager)
+    connection_manager = providers.Singleton(
+        ConnectionManager,
+        config.connection_manager,
+    )
     hardware_monitor = providers.Singleton(HardwareMonitor)
     routing_daemon = providers.Singleton(RoutingDaemon)
     rule_engine = providers.Singleton(RuleEngine)

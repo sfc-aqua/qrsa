@@ -7,7 +7,7 @@ from ipaddress import IPv4Address, IPv6Address
 from dependency_injector.wiring import inject
 
 from common.models.connection_setup_request import ConnectionSetupRequest
-from common.models.application_performance_request import ApplicationPerformanceRequest
+from common.models.app_performance_requirement import ApplicationPerformanceRequirement
 from common.models.performance_indicator import PerformanceIndicator
 
 
@@ -24,7 +24,7 @@ class QRSAClient:
     def send_connection_setup_request(
         self,
         destination: Union[IPv4Address, IPv6Address],
-        application_perofrmance_request: ApplicationPerformanceRequest,
+        application_perofrmance_request: ApplicationPerformanceRequirement,
     ):
         # Generate random application id
         application_id = str(uuid.uuid4())
@@ -38,7 +38,7 @@ class QRSAClient:
                 "dst": destination,
             },
             "application_id": application_id,
-            "application_performance_request": application_perofrmance_request,
+            "app_performance_requirement": application_perofrmance_request,
             "performance_indicators": {ip_address: performance_indicator},
         }
 
@@ -65,5 +65,5 @@ if __name__ == "__main__":
     }
 
     client.send_connection_setup_request(
-        IPv4Address("172.18.0.3"), ApplicationPerformanceRequest(**app_req)
+        IPv4Address("172.18.0.3"), ApplicationPerformanceRequirement(**app_req)
     )

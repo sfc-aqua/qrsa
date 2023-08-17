@@ -23,9 +23,7 @@ def generate_config() -> None:
     hostname = socket.gethostname()
     ip_address = socket.gethostbyname(hostname)
 
-    config = {
-        "ip_address": ip_address
-    }
+    config = {"ip_address": ip_address}
     return config
 
 

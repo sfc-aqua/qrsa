@@ -2,7 +2,7 @@ from typing import NewType, Dict, Union, List
 from pydantic import Field, BaseModel
 from ipaddress import IPv4Address, IPv6Address
 
-from common.models.application_performance_request import ApplicationPerformanceRequest
+from common.models.app_performance_requirement import ApplicationPerformanceRequirement
 from common.models.header import Header
 from common.models.performance_indicator import PerformanceIndicator
 
@@ -14,7 +14,7 @@ class ConnectionSetupRequest(BaseModel):
     application_id: ApplicationId = Field(
         ..., description="Application Id which while connection id is not ready"
     )
-    application_performance_request: ApplicationPerformanceRequest = Field(
+    app_performance_requirement: ApplicationPerformanceRequirement = Field(
         ..., description="The performance requirements for this application."
     )
     performance_indicators: Dict[
