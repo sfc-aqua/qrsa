@@ -11,18 +11,6 @@ import { request as __request } from '../core/request';
 export class DefaultService {
 
     /**
-     * Read Root
-     * @returns any Successful Response
-     * @throws ApiError
-     */
-    public static readRootHelloGet(): CancelablePromise<any> {
-        return __request(OpenAPI, {
-            method: 'GET',
-            url: '/hello',
-        });
-    }
-
-    /**
      * Docker Ps
      * @returns ContainerInfo Successful Response
      * @throws ApiError
@@ -40,12 +28,12 @@ export class DefaultService {
      * @returns any Successful Response
      * @throws ApiError
      */
-    public static startContainerContainersStartIdPost(
+    public static startContainerContainersIdStartPost(
         id: any,
     ): CancelablePromise<any> {
         return __request(OpenAPI, {
             method: 'POST',
-            url: '/containers/start/{id}',
+            url: '/containers/{id}/start',
             path: {
                 'id': id,
             },
@@ -61,14 +49,82 @@ export class DefaultService {
      * @returns any Successful Response
      * @throws ApiError
      */
-    public static stopContainerContainersStopIdPost(
+    public static stopContainerContainersIdStopPost(
         id: any,
     ): CancelablePromise<any> {
         return __request(OpenAPI, {
             method: 'POST',
-            url: '/containers/stop/{id}',
+            url: '/containers/{id}/stop',
             path: {
                 'id': id,
+            },
+            errors: {
+                422: `Validation Error`,
+            },
+        });
+    }
+
+    /**
+     * Log Container
+     * @param id
+     * @returns any Successful Response
+     * @throws ApiError
+     */
+    public static logContainerContainersIdLogsGet(
+        id: any,
+    ): CancelablePromise<any> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/containers/{id}/logs',
+            path: {
+                'id': id,
+            },
+            errors: {
+                422: `Validation Error`,
+            },
+        });
+    }
+
+    /**
+     * Diff Container
+     * @param id
+     * @returns any Successful Response
+     * @throws ApiError
+     */
+    public static diffContainerContainersIdDiffGet(
+        id: any,
+    ): CancelablePromise<any> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/containers/{id}/diff',
+            path: {
+                'id': id,
+            },
+            errors: {
+                422: `Validation Error`,
+            },
+        });
+    }
+
+    /**
+     * Exec Run Container
+     * @param id
+     * @param cmd
+     * @returns any Successful Response
+     * @throws ApiError
+     */
+    public static execRunContainerContainersIdExecRunPost(
+        id: string,
+        cmd: string,
+    ): CancelablePromise<any> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/containers/{id}/exec_run',
+            path: {
+                'id': id,
+            },
+            query: {
+                'cmd': cmd,
             },
             errors: {
                 422: `Validation Error`,
