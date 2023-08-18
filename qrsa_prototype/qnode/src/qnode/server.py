@@ -1,8 +1,8 @@
 import socket
 from fastapi import FastAPI
 
-from .endpoints import router
-from .containers import Container
+from qnode.endpoints import router
+from qnode.containers import Container
 
 
 def create_server() -> FastAPI:
@@ -22,6 +22,3 @@ def generate_config() -> None:
 
     config = {"ip_address": ip_address}
     return config
-
-
-# app = create_server()

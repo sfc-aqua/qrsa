@@ -8,11 +8,11 @@ from common.models.connection_setup_reject import ConnectionSetupReject
 
 # from common.models.response import BaseResponse
 
-from .containers import Container
-from .connection_manager.connection_manager import ConnectionManager
-from .hardware_monitor.hardware_monitor import HardwareMonitor
-from .routing_daemon.routing_daemon import RoutingDaemon
-from .rule_engine.rule_engine import RuleEngine
+from qnode.containers import Container
+from qnode.connection_manager.connection_manager import ConnectionManager
+from qnode.hardware_monitor.hardware_monitor import HardwareMonitor
+from qnode.routing_daemon.routing_daemon import RoutingDaemon
+from qnode.rule_engine.rule_engine import RuleEngine
 
 router = APIRouter()
 
@@ -45,6 +45,8 @@ async def handle_connection_setup_request(
     if config["ip_address"] == request.header.dst:
         # This node is the final destination
         # Create RuleSet and send back
+        # Get my performance indicator
+        performance_indicator = hardware_monitor.get_performance_indicator()
         responder_ruleset = (
             await connection_manager.respond_to_connection_setup_request(request)
         )
@@ -76,8 +78,8 @@ async def handle_connection_setup_response(
     :param response: ConnectionSetupResponse
     :return: dict
     """
-    # Unpack the response and unpack response to get ruleset
-    connection_manager.link_connection_id_to_application_id(
+    # register this connection id to connection manager and tie with application id
+    connection_manager.register_connection(
         response.application_id, response.connection_id
     )
     # Get proposed lau from rule engine based on current running ruleset

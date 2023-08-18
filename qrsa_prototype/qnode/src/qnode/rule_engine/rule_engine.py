@@ -1,7 +1,7 @@
 from typing import Dict
 from common.models.ruleset import RuleSet
 
-from .ruleset_runtime import RuleSetRuntime
+from qnode.rule_engine.ruleset_runtime import RuleSetRuntime
 
 
 class RuleEngine:
