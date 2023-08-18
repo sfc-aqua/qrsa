@@ -1,6 +1,6 @@
-import socket
-import requests
 import uuid
+import requests
+import aiohttp
 from typing import Dict, Any
 from dependency_injector.providers import Configuration, Provide
 
@@ -14,9 +14,6 @@ from common.type_utils import IpAddressType
 from qnode.connection_manager.ruleset_factory import RuleSetFactory
 from qnode.connection_manager.interface import AbstractConnectionManager
 from qnode.containers import Container
-
-hostname = socket.gethostname()
-ip_address = socket.gethostbyname(hostname)
 
 
 class ConnectionManager(AbstractConnectionManager):
@@ -62,8 +59,10 @@ class ConnectionManager(AbstractConnectionManager):
         connection_id = f"{uuid.uuid4()}"
         self.running_connections[connection_id] = connection_meta
 
+        # Append this node's information to the given request
         given_request.hosts.append(ip_address)
         given_request.performance_indicator |= {ip_address: performance_indicator}
+
         # create ruleset
         rulesets = self.ruleset_factory.create_ruleset(
             connection_id,
@@ -73,6 +72,11 @@ class ConnectionManager(AbstractConnectionManager):
 
         # send rulesets to intermediate nodes
         for host in given_request.hosts:
+            if host == ip_address:
+                # The last ruleset goes to this node itself.
+                # This doesn't have to be sent to other nodes.
+                return rulesets[self.config["ip_address"]]
+
             # Take a ruleset and send it to destination
             connection_setup_response_json = ConnectionSetupResponse(
                 **{
@@ -83,16 +87,11 @@ class ConnectionManager(AbstractConnectionManager):
             ).model_dump_json()
 
             # Send message in json format
-            self.send_message(
+            await self.send_message(
                 connection_setup_response_json,
                 host,
                 "connection_setup_response",
             )
-
-            if host == ip_address:
-                # The last ruleset goes to this node itself.
-                # This doesn't have to be sent to other nodes.
-                return rulesets[self.config["ip_address"]]
 
     def link_connection_id_to_application_id(
         self, application_id: str, connection_id: str
@@ -134,7 +133,7 @@ class ConnectionManager(AbstractConnectionManager):
 
         # Append this node's performance indicator to the request
         given_request.performance_indicator |= {
-            self.config.ip_address: performance_indicator
+            self.config["ip_address"]: performance_indicator
         }
 
         # Create a new request based  on forward request
@@ -145,12 +144,12 @@ class ConnectionManager(AbstractConnectionManager):
                 "appliaction_id": given_request.application_id,
                 "app_performance_requirement": app_req,
                 "performance_indicator": given_request.performance_indicator,
-                "hosts": given_request.hosts.append(ip_address),
+                "hosts": given_request.hosts.append(self.config["ip_address"]),
             }
         ).model_dump_json()
 
         # Send request to next hop
-        self.send_message(new_request_json, next_hop, "connection_setup_request")
+        await self.send_message(new_request_json, next_hop, "connection_setup_request")
 
     async def send_message(
         self,
@@ -167,10 +166,13 @@ class ConnectionManager(AbstractConnectionManager):
         """
         try:
             # Serialization format could be configurable
-            requests.post(
-                f"{destination}:{port}/{endpoint}",
-                data=message,
-                headers=headers,
-            )
+            url = f"http://{destination}:{port}/{endpoint}"
+            async with aiohttp.ClientSession() as session:
+                async with session.post(
+                    url,
+                    data=message,
+                    headers=headers,
+                ) as response:
+                    return await response
         except Exception as e:
             raise e

@@ -10,9 +10,13 @@
 -e file:controller
 -e file:qnode
 -e file:.
+aiohttp==3.8.5
+aiosignal==1.3.1
 annotated-types==0.5.0
 anyio==3.7.1
+async-timeout==4.0.3
 asyncio==3.4.3
+attrs==23.1.0
 black==23.7.0
 certifi==2023.7.22
 charset-normalizer==3.2.0
@@ -20,6 +24,7 @@ click==8.1.6
 dependency-injector==4.41.0
 docker==6.1.3
 fastapi==0.101.0
+frozenlist==1.4.0
 h11==0.14.0
 httpcore==0.17.3
 httptools==0.6.0
@@ -27,6 +32,7 @@ httpx==0.24.1
 idna==3.4
 iniconfig==2.0.0
 ipaddress==1.0.23
+multidict==6.0.4
 mypy-extensions==1.0.0
 packaging==23.1
 pathspec==0.11.2
@@ -51,3 +57,4 @@ uvloop==0.17.0
 watchfiles==0.19.0
 websocket-client==1.6.1
 websockets==11.0.3
+yarl==1.9.2
