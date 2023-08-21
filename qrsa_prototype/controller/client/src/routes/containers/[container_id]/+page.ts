@@ -1,9 +1,9 @@
 import { dev } from '$app/environment';
 
 export function load({ params }) {
-    return {
-        container_id: params.container_id
-    }
+	return {
+		container_id: params.container_id
+	};
 }
 
 export const prerender = true;

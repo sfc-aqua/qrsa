@@ -33,9 +33,9 @@
 				{:else}
 					<td><button on:click={() => API.stopContainer(c.id)}>stop</button></td>
 				{/if}
-                <td>
-                    <a href={`/containers/${c.id}`}>show</a>
-                </td>
+				<td>
+					<a href={`/containers/${c.id}`}>show</a>
+				</td>
 			</tr>
 		{/each}
 	</tbody>

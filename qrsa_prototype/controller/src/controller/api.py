@@ -3,7 +3,7 @@ from fastapi import Depends, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 import docker
 from pydantic import BaseModel
-from typing import Any, List, Dict, Annotated
+from typing import Any, List, Dict, Annotated, Optional
 
 api = FastAPI()
 origins = [
@@ -41,7 +41,7 @@ class ContainerInfo(BaseModel):
     status: ContainerStatus
     attrs: Any
     ports: Dict[str, List[PortInfo]]
-    top: ProcessesInfo
+    top: Optional[ProcessesInfo]
 
 def DockerClient() -> docker.DockerClient:
         return docker.client.from_env()
