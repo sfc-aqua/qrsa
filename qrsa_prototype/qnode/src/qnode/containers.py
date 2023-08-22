@@ -1,5 +1,6 @@
 from dependency_injector import containers, providers
 
+from qnode.real_time_controller.real_time_controller import RealtimeController
 from qnode.connection_manager.connection_manager import ConnectionManager
 from qnode.hardware_monitor.hardware_monitor import HardwareMonitor
 from qnode.routing_daemon.routing_daemon import RoutingDaemon
@@ -24,10 +25,11 @@ class Container(containers.DeclarativeContainer):
     )
     config = providers.Configuration("config")
 
+    real_time_controller = providers.Singleton(RealtimeController)
     connection_manager = providers.Singleton(
         ConnectionManager,
         config,
     )
-    hardware_monitor = providers.Singleton(HardwareMonitor)
+    hardware_monitor = providers.Singleton(HardwareMonitor, real_time_controller)
     routing_daemon = providers.Singleton(RoutingDaemon)
-    rule_engine = providers.Singleton(RuleEngine, config)
+    rule_engine = providers.Singleton(RuleEngine, config, real_time_controller)
