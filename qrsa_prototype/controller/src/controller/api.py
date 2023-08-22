@@ -26,7 +26,6 @@ class ContainerStatus(Enum):
     Paused = "paused"
     Exited = "exited"
 
-
 class PortInfo(BaseModel):
     HostIp: str
     HostPort: str
@@ -85,3 +84,7 @@ async def diff_container(id, client:DockerClientDep):
 @api.post("/containers/{id}/exec_run" )
 async def exec_run_container(id: str, cmd: str, client:DockerClientDep):
      return {"exec_result": client.containers.get(id).exec_run(cmd)}
+
+@api.post("/links/{id}/delay")
+async def set_delay(id, time: float, jitter: float, correlation: float, distribution: Optional[PumbaDelayDistribution]):
+     pass
