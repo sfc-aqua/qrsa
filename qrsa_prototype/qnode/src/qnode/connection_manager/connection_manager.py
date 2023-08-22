@@ -1,8 +1,7 @@
 import uuid
-import requests
 import aiohttp
 from typing import Dict, Any
-from dependency_injector.providers import Configuration, Provide
+from dependency_injector.providers import Configuration
 
 from common.models.ruleset import RuleSet
 from common.models.connection_setup_request import ConnectionSetupRequest
@@ -13,7 +12,6 @@ from common.type_utils import IpAddressType
 
 from qnode.connection_manager.ruleset_factory import RuleSetFactory
 from qnode.connection_manager.interface import AbstractConnectionManager
-from qnode.containers import Container
 
 
 class ConnectionManager(AbstractConnectionManager):
@@ -49,7 +47,7 @@ class ConnectionManager(AbstractConnectionManager):
         # create connection meta and register it to running connections
         connection_meta = ConnectionMeta(
             # at the end of host list, there should be the previous hop informaion
-            prev_hop=given_request.hosts[-1],
+            prev_hop=given_request.host_list[-1],
             next_hop=None,  # This should be responder, so next hop is None
             source=given_request.header.src,
             destination=given_request.header.dst,
@@ -60,34 +58,34 @@ class ConnectionManager(AbstractConnectionManager):
         self.running_connections[connection_id] = connection_meta
 
         # Append this node's information to the given request
-        given_request.hosts.append(ip_address)
-        given_request.performance_indicator |= {ip_address: performance_indicator}
+        given_request.host_list.append(ip_address)
+        given_request.performance_indicators |= {ip_address: performance_indicator}
 
         # create ruleset
         rulesets = self.ruleset_factory.create_ruleset(
             connection_id,
-            host_lists=given_request.hosts,
-            performance_indicators=given_request.performance_indicator,
+            host_lists=given_request.host_list,
+            performance_indicators=given_request.performance_indicators,
         )
 
         # send rulesets to intermediate nodes
-        for host in given_request.hosts:
+        for host in given_request.host_list:
             if host == ip_address:
                 # The last ruleset goes to this node itself.
                 # This doesn't have to be sent to other nodes.
-                return rulesets[self.config["ip_address"]]
+                return rulesets[host]
 
             # Take a ruleset and send it to destination
             connection_setup_response_json = ConnectionSetupResponse(
                 **{
                     "application_id": given_request.application_id,
                     "connection_id": connection_id,
-                    "ruleset": rulesets,
+                    "ruleset": rulesets[host],
                 }
             ).model_dump_json()
 
             # Send message in json format
-            await self.send_message(
+            _response = await self.send_message(
                 connection_setup_response_json,
                 host,
                 "connection_setup_response",
@@ -122,7 +120,7 @@ class ConnectionManager(AbstractConnectionManager):
         """
         # Store information about this connection
         connection_meta = ConnectionMeta(
-            prev_hop=given_request.hosts[-1],
+            prev_hop=given_request.host_list[-1],
             next_hop=next_hop,
             source=given_request.header.src,
             destination=given_request.header.dst,
@@ -144,12 +142,15 @@ class ConnectionManager(AbstractConnectionManager):
                 "appliaction_id": given_request.application_id,
                 "app_performance_requirement": app_req,
                 "performance_indicator": given_request.performance_indicator,
-                "hosts": given_request.hosts.append(self.config["ip_address"]),
+                "host_list": given_request.host_list.append(self.config["ip_address"]),
             }
         ).model_dump_json()
 
         # Send request to next hop
-        await self.send_message(new_request_json, next_hop, "connection_setup_request")
+        response = await self.send_message(
+            new_request_json, next_hop, "connection_setup_request"
+        )
+        return response
 
     async def send_message(
         self,
@@ -158,14 +159,12 @@ class ConnectionManager(AbstractConnectionManager):
         endpoint: str,
         headers: Dict[str, str] = {"Content-Type": "application/json"},
         port: int = 8080,  # tempral
-        config: Configuration = Provide[Container.config],
     ):
         """
         Send a message to a destination
         message needs to implement model_dump_json()
         """
         try:
-            # Serialization format could be configurable
             url = f"http://{destination}:{port}/{endpoint}"
             async with aiohttp.ClientSession() as session:
                 async with session.post(

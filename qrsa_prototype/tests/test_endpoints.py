@@ -14,7 +14,7 @@ class TestEndpoints:
         with test_client as client:
             response = client.post(
                 "/connection_setup_request",
-                data=base_connection_setup_request.model_dump_json(),
+                data=base_connection_setup_request(2, 0).model_dump_json(),
                 headers={"Content-Type": "application/json"},
             )
             assert response.status_code == 200

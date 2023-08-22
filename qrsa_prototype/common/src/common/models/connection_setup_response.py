@@ -13,4 +13,4 @@ class ConnectionSetupResponse(BaseModel):
         ..., description="Application Id corresponding to the connection id"
     )
     connection_id: str = Field(..., description="Identifier for this connection")
-    rulesets: RuleSet = Field(..., description="List of rulesets in this connection")
+    ruleset: RuleSet = Field(..., description="List of rulesets in this connection")

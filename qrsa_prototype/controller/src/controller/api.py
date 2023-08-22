@@ -2,6 +2,7 @@ from fastapi import FastAPI
 
 api = FastAPI()
 
+
 @api.get("/hello")
 def read_root():
     return {"Hello": "World"}
