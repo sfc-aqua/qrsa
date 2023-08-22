@@ -5,8 +5,8 @@ from dependency_injector.wiring import inject, Provide
 from common.models.connection_setup_request import ConnectionSetupRequest
 from common.models.connection_setup_response import ConnectionSetupResponse
 from common.models.connection_setup_reject import ConnectionSetupReject
+from common.log.logger import logger
 
-# from common.models.response import BaseResponse
 
 from qnode.containers import Container
 from qnode.connection_manager.connection_manager import ConnectionManager
@@ -42,10 +42,12 @@ async def handle_connection_setup_request(
     In the future, we may want to communicate over a different protocol
     as they are implemented on routers or repeaters.
     """
+    logger.debug("Received connection setup request")
     if config["ip_address"] == request.header.dst:
         # This node is the final destination
         # Create RuleSet and send back
         # Get my performance indicator
+        logger.debug("Connection Setup Request reached to the responder")
         performance_indicator = hardware_monitor.get_performance_indicator()
         responder_ruleset = (
             await connection_manager.respond_to_connection_setup_request(request)
@@ -61,6 +63,7 @@ async def handle_connection_setup_request(
     connection_manager.forward_connection_setup_request(
         request, performance_indicator, next_hop_address
     )
+    logger.debug("Connection Setup Request forwarded to the next hop")
     return {"message": "Received connection setup request"}
 
 
@@ -78,18 +81,16 @@ async def handle_connection_setup_response(
     :param response: ConnectionSetupResponse
     :return: dict
     """
+    logger.debug("Received connection setup response")
     # register this connection id to connection manager and tie with application id
     connection_manager.register_connection(
         response.application_id, response.connection_id
     )
     # Get proposed lau from rule engine based on current running ruleset
-    next_proposed_lau = rule_engine.accept_ruleset(response)
+    proposed_la = rule_engine.accept_ruleset(response)
 
-    connection_manager.send_lau_update(next_proposed_lau)
+    connection_manager.send_lau_update(proposed_la)
     return {"message": "Received connection setup response"}
-
-    #  forward to next hop?
-    # response may not need to be forwarded manually
 
 
 @router.post("/connection_setup_reject")

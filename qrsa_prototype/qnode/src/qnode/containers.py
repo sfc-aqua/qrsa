@@ -26,8 +26,8 @@ class Container(containers.DeclarativeContainer):
 
     connection_manager = providers.Singleton(
         ConnectionManager,
-        config.connection_manager,
+        config,
     )
     hardware_monitor = providers.Singleton(HardwareMonitor)
     routing_daemon = providers.Singleton(RoutingDaemon)
-    rule_engine = providers.Singleton(RuleEngine)
+    rule_engine = providers.Singleton(RuleEngine, config)

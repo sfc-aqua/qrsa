@@ -85,11 +85,16 @@ class ConnectionManager(AbstractConnectionManager):
             ).model_dump_json()
 
             # Send message in json format
-            _response = await self.send_message(
+            response = await self.send_message(
                 connection_setup_response_json,
                 host,
                 "connection_setup_response",
             )
+            if response.status_code != 200:
+                raise Exception(
+                    f"Failed to send ruleset to {host}.\
+                    Error code: {response.status_code}"
+                )
 
     def link_connection_id_to_application_id(
         self, application_id: str, connection_id: str

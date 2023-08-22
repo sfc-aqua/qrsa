@@ -33,7 +33,7 @@ class TestConnectionManager:
 
         mocker.patch("uuid.uuid4", return_value="connection_id")
         mocker.patch(
-            "qnode.connection_manager.connection_manager.ConnectionManager.send_message",
+            "qnode.connection_manager.connection_manager.ConnectionManager.send_message",  # noqa
             return_value={},
         )
         ruleset = await cm.respond_to_connection_setup_request(
