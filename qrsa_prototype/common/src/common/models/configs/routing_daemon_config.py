@@ -1,4 +1,5 @@
-from enum import List, Optional, Enum
+from typing import List, Optional, Dict
+from enum import Enum
 from pydantic import BaseModel, Field, validator
 
 from common.type_utils import IpAddressType
@@ -32,7 +33,7 @@ class RoutingDaemonConfig(BaseModel):
         ...,
         description="Routing type name. This coule be routing protocol in the future.",
     )
-    routing_table: List[RouteInfo] = Field(..., description="Routing table")
+    routing_table: Dict[str, List[RouteInfo]] = Field(..., description="Routing table")
 
     @validator("routing_table", pre=True, always=True)
     def validate_routing_table(cls, routing_table, values):

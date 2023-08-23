@@ -4,6 +4,7 @@ from fastapi import FastAPI
 
 from qnode.endpoints import router
 from qnode.containers import Container
+from common.models.configs.config import Config
 
 
 def create_server() -> FastAPI:
@@ -17,16 +18,14 @@ def create_server() -> FastAPI:
     return app
 
 
-def generate_config() -> None:
+def generate_config() -> Config:
     hostname = socket.gethostname()
     ip_address = socket.gethostbyname(hostname)
 
     with open("./config/default_config.yml", "r") as f:
         config = yaml.safe_load(f)
 
-    # add config pydantic model to validate given config
     # update default config with current ip address
     config["meta"]["ip_address"] = ip_address
     config["meta"]["hostname"] = hostname
-
-    return config
+    return Config(**config)
