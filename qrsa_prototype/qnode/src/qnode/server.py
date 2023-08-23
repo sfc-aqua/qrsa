@@ -1,4 +1,5 @@
 import socket
+import yaml
 from fastapi import FastAPI
 
 from qnode.endpoints import router
@@ -20,5 +21,10 @@ def generate_config() -> None:
     hostname = socket.gethostname()
     ip_address = socket.gethostbyname(hostname)
 
-    config = {"ip_address": ip_address}
+    with open("./config/default_config.yml", "r") as f:
+        config = yaml.safe_load(f)
+
+    # update default config with current ip address
+    config["ip_address"] = ip_address
+
     return config

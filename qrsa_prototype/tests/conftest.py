@@ -1,8 +1,10 @@
 import pytest
-from typing import List
+from typing import List, Any
 from fastapi.testclient import TestClient
 
 from qnode import server
+from qnode.real_time_controller.real_time_controller import RealtimeController
+
 from common.models.connection_setup_request import ConnectionSetupRequest
 from common.models.app_performance_requirement import ApplicationPerformanceRequirement
 from common.models.header import Header
@@ -94,3 +96,21 @@ def base_connection_setup_request(
         return csr
 
     return _gen_connection_setup_request
+
+
+@pytest.fixture
+def mock_rtc(mocker: Any):
+    """
+    Mock RealtimeController that patches rtc functions and return dummy rtc object.
+    """
+    mocker.patch(
+        "qnode.real_time_controller.real_time_controller.RealtimeController.start_link_entanglement_generation"  # noqa
+    )
+    mocker.patch(
+        "qnode.real_time_controller.real_time_controller.RealtimeController.stop_link_entanglement_generation"  # noqa
+    )
+    mocker.patch(
+        "qnode.real_time_controller.real_time_controller.RealtimeController.fetch_link_entanglement"  # noqa
+    )
+
+    return RealtimeController()

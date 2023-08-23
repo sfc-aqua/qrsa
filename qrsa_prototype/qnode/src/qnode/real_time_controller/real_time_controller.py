@@ -1,3 +1,4 @@
+import queue
 from queue import Queue
 from qnode.real_time_controller.interface import AbstractRealtimeController
 from common.models.resource import ResourceMeta
@@ -29,5 +30,11 @@ class RealtimeController(AbstractRealtimeController):
         self.generating = False
 
     async def fetch_link_entanglement(self):
-        # prepare generator here
-        pass
+        """
+        Asyncronous generator that takes a resource from queue
+        """
+        try:
+            yield self.generated_link_entanglement.get(block=True)
+        except queue.Empty:
+            # If there is no available link entanglement, return None
+            yield None

@@ -3,6 +3,7 @@ from queue import Queue
 
 from common.models.ruleset import RuleSet
 from common.models.resource import ResourceMeta
+from common.log.logger import logger
 
 from qnode.rule_engine.ruleset_runtime import RuleSetRuntime
 from qnode.real_time_controller.real_time_controller import RealtimeController
@@ -19,13 +20,22 @@ class RuleEngine:
         # A realtime controller to control hardware devices
         self.rtc = rtc
 
-    def accept_resource(self, resource_meta: ResourceMeta):
+    async def get_resource(self, resource_meta: ResourceMeta):
         """
         Accept a resource from RTC.
 
         :param resource_meta: ResourceMeta
         """
-        self.available_link_resource.put(resource_meta)
+        trial = 0
+        while True:
+            resource = await self.rtc.fetch_link_entanglement()
+            if resource is not None:
+                self.available_link_resource.put(resource)
+                break
+            trial += 1
+            if trial > 10:
+                logger.warning("Resource is not availbe after 10 attempts")
+                break
 
     def get_available_link_resource(self) -> ResourceMeta:
         return self.available_link_resource.get()
@@ -33,6 +43,13 @@ class RuleEngine:
     def accept_ruleset(self, connection_id: str, ruleset: RuleSet):
         # TODO: implement policy and pptsn relationship
 
+        if self.running_runtime.get(connection_id):
+            # start link entanglement generation process
+            self.rtc.start_link_entanglement_generation()
+
         # Initialize runtime
         runtime = RuleSetRuntime(ruleset)
         self.running_runtime[connection_id] = runtime
+
+    def terminate_ruleset(self, connection_id: str):
+        pass

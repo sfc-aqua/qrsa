@@ -16,6 +16,10 @@ ip_address = socket.gethostbyname(hostname)
 
 
 class QRSAClient:
+    """
+    Initiate connection setup process
+    """
+
     def __init__(self):
         self.pending_connection: List[str] = []
 
