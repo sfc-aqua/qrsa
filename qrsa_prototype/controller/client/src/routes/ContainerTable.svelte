@@ -5,7 +5,8 @@
 	export let containers: ContainerInfo[];
 	const convertPortInfo = (ports: Record<string, PortInfo[]>): string => {
 		return Object.entries(ports).reduce(
-			(acc, [port, info]) => acc + `${port} -> [${info[0].HostIp}:${info[0].HostPort}]`,
+			(acc, [port, info]) =>
+				acc + (acc.length > 0 ? ', ' : '') + `${port} -> [${info[0].HostIp}:${info[0].HostPort}]`,
 			''
 		);
 	};

@@ -56,11 +56,11 @@
 			elements: [],
 			...CYTOSCAPE_DEFAULT_OPTIONS
 		});
-		cy.on("unselect", ({target}) => {
+		cy.on('unselect', ({ target }) => {
 			const id = target.data().id;
 			if (id === selectedLinkId) selectedLinkId = undefined;
-			if (id === selectedQNodeId) selectedQNodeId= undefined;
-		})
+			if (id === selectedQNodeId) selectedQNodeId = undefined;
+		});
 	});
 
 	$: if (cy !== undefined) {
@@ -77,31 +77,25 @@
 				selectedQNodeId = target.data().id;
 			});
 		}
-		for (let i = 0; i < containers.length; i++) {
-			const c = containers[i];
-			if (c.name.includes('controller')) continue;
-			for (let j = i; j < containers.length; j++) {
-				const d = containers[j];
-				if (d.name.includes('controller')) continue;
-				if (c.id === d.id) continue;
-				const id = `${d.id}-${c.id}`;
-				const edge = cy.getElementById(id);
-				if (edge.length > 0) continue;
-				const elem = cy.add({ data: { id, source: c.id, target: d.id } });
-				links.update((ls) => [...ls, { id, qnodeIds: new Set([d.id, c.id]) }]);
-				elem.on('select', ({ target }) => {
-					selectedQNodeId = undefined;
-					selectedLinkId = target.data().id;
-				});
-			}
+		for (let i = 0; i < $links.length; i++) {
+			const l = $links[i];
+			const id = l.id;
+			const [qnodeId1, qnodeId2] = l.qnodeIds.values();
+			const edge = cy.getElementById(id);
+			if (edge.length > 0) continue;
+			if (cy.getElementById(qnodeId1).length === 0 || cy.getElementById(qnodeId2).length === 0)
+				continue;
+			const elem = cy.add({ data: { id, source: qnodeId1, target: qnodeId2 } });
+			elem.on('select', ({ target }) => {
+				selectedQNodeId = undefined;
+				selectedLinkId = target.data().id;
+			});
 		}
 		cy.endBatch();
 		layout.run();
 	}
-	const runLayout = () => {};
 </script>
 
-<!-- <button on:click={() => cy?.layout()}>layout</button> -->
 <div class="container">
 	<div id="network-graph" />
 	<QNodeInfo qnodeId={selectedQNodeId} />
@@ -117,5 +111,4 @@
 	.container {
 		display: flex;
 	}
-
 </style>
