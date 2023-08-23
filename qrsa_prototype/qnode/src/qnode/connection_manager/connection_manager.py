@@ -1,4 +1,5 @@
 import uuid
+import json
 import aiohttp
 from typing import Dict, Any
 from dependency_injector.providers import Configuration
@@ -25,8 +26,6 @@ class ConnectionManager(AbstractConnectionManager):
         self.ruleset_factory = RuleSetFactory()
         # application_id -> connection_id
         self.application_id_to_connection_id: Dict[str, str] = {}
-        # application_id -> ConnectionMeta
-        self.pending_connections: Dict[str, ConnectionMeta] = {}
         # connection_id -> ConnectionMeta
         self.running_connections: Dict[str, ConnectionMeta] = {}
 
@@ -34,15 +33,23 @@ class ConnectionManager(AbstractConnectionManager):
         self,
         given_request: ConnectionSetupRequest,
         performance_indicator: PerformanceIndicator,
-    ) -> RuleSet:
+    ) -> (str, RuleSet):
         """
         Respond to a connection setup request.
         This function creates and distributes RuleSets to intermediate nodes.
 
         A ruleset for this responder node is returned here.
+
+        Arguments: 
+            given_request: ConnectionSetupRequest that is received at the responder node
+            performance_indicator: PerformanceIndicator of this node
+        
+        Returns:
+            str: Connection id for this RuleSet
+            RuleSet: A ruleset for this responder node
         """
         # Get my ip address
-        ip_address = self.config["ip_address"]
+        ip_address = self.config["meta"]["ip_address"]
 
         # create connection meta and register it to running connections
         connection_meta = ConnectionMeta(
@@ -90,29 +97,6 @@ class ConnectionManager(AbstractConnectionManager):
                 host,
                 "connection_setup_response",
             )
-            if response.status_code != 200:
-                raise Exception(
-                    f"Failed to send ruleset to {host}.\
-                    Error code: {response.status_code}"
-                )
-
-    def link_connection_id_to_application_id(
-        self, application_id: str, connection_id: str
-    ):
-        """
-        Link a connection id to an application id
-        """
-        if application_id not in self.pending_connections:
-            raise ValueError(
-                f"Application id {application_id} not found in pending connection"
-            )
-        # make a map for later use
-        self.application_id_to_connection_id[application_id] = connection_id
-
-        # move pending connection to running connection
-        self.running_connections[connection_id] = self.pending_connections[
-            application_id
-        ]
 
     async def forward_connection_setup_request(
         self,
@@ -130,13 +114,10 @@ class ConnectionManager(AbstractConnectionManager):
             source=given_request.header.src,
             destination=given_request.header.dst,
         )
-        # When this node receives a connection setup response,
-        # this connection meta is moved to running connections
-        self.pending_connections[given_request.application_id] = connection_meta
 
         # Append this node's performance indicator to the request
         given_request.performance_indicator |= {
-            self.config["ip_address"]: performance_indicator
+            self.config["meta"]["ip_address"]: performance_indicator
         }
 
         # Create a new request based  on forward request
@@ -147,7 +128,9 @@ class ConnectionManager(AbstractConnectionManager):
                 "appliaction_id": given_request.application_id,
                 "app_performance_requirement": app_req,
                 "performance_indicator": given_request.performance_indicator,
-                "host_list": given_request.host_list.append(self.config["ip_address"]),
+                "host_list": given_request.host_list.append(
+                    self.config["meta"]["ip_address"]
+                ),
             }
         ).model_dump_json()
 
@@ -156,6 +139,10 @@ class ConnectionManager(AbstractConnectionManager):
             new_request_json, next_hop, "connection_setup_request"
         )
         return response
+
+    async def send_lau_update(self, proposed_la: RuleSet):
+        print("send lau update")
+        pass
 
     async def send_message(
         self,
@@ -177,6 +164,8 @@ class ConnectionManager(AbstractConnectionManager):
                     data=message,
                     headers=headers,
                 ) as response:
-                    return await response
+                    resp = await response.read()
+                    print(type(resp), resp)
+                    return resp
         except Exception as e:
             raise e

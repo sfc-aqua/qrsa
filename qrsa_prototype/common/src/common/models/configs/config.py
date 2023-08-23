@@ -1,5 +1,6 @@
-from typing import List, Optional
+from typing import Optional
 from pydantic import BaseModel, Field
+from pydantic_settings import BaseSettings
 
 from common.models.configs.routing_daemon_config import RoutingDaemonConfig
 from common.models.configs.rule_engine_config import RuleEngineConfig
@@ -17,7 +18,7 @@ class MetaInfo(BaseModel):
     hostname: str = Field(..., description="Hostname of the node")
 
 
-class Config(BaseModel):
+class Config(BaseSettings):
     """
     A model for input config
     """

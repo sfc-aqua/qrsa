@@ -1,5 +1,6 @@
 from typing import Any
 from fastapi import APIRouter, Depends
+from fastapi.responses import JSONResponse
 from dependency_injector.wiring import inject, Provide
 
 from common.models.connection_setup_request import ConnectionSetupRequest
@@ -43,17 +44,22 @@ async def handle_connection_setup_request(
     as they are implemented on routers or repeaters.
     """
     logger.debug("Received connection setup request")
-    if config["ip_address"] == request.header.dst:
+    if config["meta"]["ip_address"] == request.header.dst:
         # This node is the final destination
         # Create RuleSet and send back
         # Get my performance indicator
         logger.debug("Connection Setup Request reached to the responder")
         performance_indicator = hardware_monitor.get_performance_indicator()
-        responder_ruleset = (
-            await connection_manager.respond_to_connection_setup_request(request)
+        connection_id, responder_ruleset = (
+            await connection_manager.respond_to_connection_setup_request(
+                request, performance_indicator
+            )
         )
-        rule_engine.accept_ruleset(responder_ruleset)
-        return {"message": "Received connection setup request"}
+        rule_engine.accept_ruleset(connection_id, responder_ruleset)
+        return JSONResponse(
+            content={"message": "Received connection setup request"},
+            headers={"Content-Type": "application/json"},
+        )
 
     # The final destination is not this node
     # Forward to next hop
@@ -64,7 +70,10 @@ async def handle_connection_setup_request(
         request, performance_indicator, next_hop_address
     )
     logger.debug("Connection Setup Request forwarded to the next hop")
-    return {"message": "Received connection setup request"}
+    return JSONResponse(
+        content={"message": "Received connection setup request"},
+        headers={"Content-Type": "application/json"},
+    )
 
 
 @router.post("/connection_setup_response")
@@ -82,15 +91,17 @@ async def handle_connection_setup_response(
     :return: dict
     """
     logger.debug("Received connection setup response")
-    # register this connection id to connection manager and tie with application id
-    connection_manager.register_connection(
-        response.application_id, response.connection_id
-    )
+
     # Get proposed lau from rule engine based on current running ruleset
-    proposed_la = rule_engine.accept_ruleset(response)
+    proposed_la = rule_engine.accept_ruleset(
+        response.connection_id, response.ruleset
+    )
 
     connection_manager.send_lau_update(proposed_la)
-    return {"message": "Received connection setup response"}
+    return JSONResponse(
+        content={"message": "Received connection setup response"},
+        headers={"Content-Type": "application/json"},
+    )
 
 
 @router.post("/connection_setup_reject")

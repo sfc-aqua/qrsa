@@ -44,6 +44,7 @@ class QRSAClient:
             "application_id": application_id,
             "app_performance_requirement": application_perofrmance_request,
             "performance_indicators": {ip_address: performance_indicator},
+            "host_list": [ip_address],
         }
 
         csr = ConnectionSetupRequest(**csr_contents)

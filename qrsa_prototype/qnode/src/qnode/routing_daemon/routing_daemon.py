@@ -7,14 +7,14 @@ class RoutingDaemon:
         self.config = config
         # destination -> next_hop
         self.routing_table = {}
-        if self.config.get("routing_daemon").get("routing_type") == "static":
-            self.setup_static_route(
-                self.config.get("routing_daemon")
-                .get("routing_table")
-                .get(self.config["meta"]["hostname"])
-            )
-        else:
-            raise NotImplementedError("Only static routing is supported now")
+        if self.config.get("routing_daemon") is not None:
+            route_config = self.config["routing_daemon"]
+            if route_config["routing_type"] == "static":
+                self.setup_static_route(
+                    route_config["routing_table"][self.config["meta"]["hostname"]]
+                )
+            else:
+                raise NotImplementedError("Only static routing is supported now")
 
     def setup_static_route(self, routing_info: dict):
         for route in routing_info:

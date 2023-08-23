@@ -11,7 +11,8 @@ class RealtimeController(AbstractRealtimeController):
     This is used only from RuleEngine and HardwareMonitor.
     """
 
-    def __init__(self):
+    def __init__(self, config: dict):
+        self.config = config
         self.generating = False
         self.generated_link_entanglement: Queue[ResourceMeta] = Queue(maxsize=0)
 

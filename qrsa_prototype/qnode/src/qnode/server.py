@@ -10,7 +10,10 @@ from common.models.configs.config import Config
 def create_server() -> FastAPI:
     config = generate_config()
     container = Container()
-    container.config.from_dict(config)
+    # Managing config in pydantic model would be cleaner, but currently
+    # there is a bug so that we cannot use from_pydantic() method in this version
+    # https://github.com/ets-labs/python-dependency-injector/issues/726
+    container.config.from_dict(config.model_dump())
 
     app = FastAPI()
     app.container = container

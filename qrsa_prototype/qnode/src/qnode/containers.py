@@ -25,11 +25,13 @@ class Container(containers.DeclarativeContainer):
     )
     config = providers.Configuration("config")
 
-    real_time_controller = providers.Singleton(RealtimeController)
+    real_time_controller = providers.Singleton(RealtimeController, config)
     connection_manager = providers.Singleton(
         ConnectionManager,
         config,
     )
-    hardware_monitor = providers.Singleton(HardwareMonitor, real_time_controller)
-    routing_daemon = providers.Singleton(RoutingDaemon)
+    hardware_monitor = providers.Singleton(
+        HardwareMonitor, config, real_time_controller
+    )
+    routing_daemon = providers.Singleton(RoutingDaemon, config)
     rule_engine = providers.Singleton(RuleEngine, config, real_time_controller)
