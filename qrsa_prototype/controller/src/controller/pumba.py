@@ -2,7 +2,7 @@ from enum import Enum
 import subprocess
 from typing import Optional
 
-BASE_CMD = "docker run -it --rm  -v /var/run/docker.sock:/var/run/docker.sock gaiaadm/pumba netem".split(
+BASE_CMD = "docker run -it --rm -v /var/run/docker.sock:/var/run/docker.sock gaiaadm/pumba netem".split(
     " "
 )
 
@@ -14,8 +14,8 @@ class PumbaDelayDistribution(Enum):
     ParetoNormal = "paretonormal"
 
 
-async def delay(
-    id,
+def delay(
+    container: str,
     time: float,
     jitter: float,
     correlation: float,
@@ -35,3 +35,18 @@ async def delay(
             distribution,
         ]
     )
+
+
+def loss(container: str, target_ip):
+    cmd = BASE_CMD + [
+        "--duration",
+        "999h",
+        "loss",
+        container,
+        "--target",
+        target_ip,
+        "--percent",
+        "100",
+    ]
+    print(cmd)
+    return subprocess.run(cmd)
