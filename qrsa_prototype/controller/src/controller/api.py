@@ -1,6 +1,7 @@
 from enum import Enum
 from fastapi import Depends, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import StreamingResponse
 import docker
 from pydantic import BaseModel
 from typing import Any, List, Dict, Annotated, Optional
@@ -92,7 +93,15 @@ async def diff_container(id, client: DockerClientDep):
 
 @api.post("/containers/{id}/exec_run")
 async def exec_run_container(id: str, cmd: str, client: DockerClientDep):
-    return {"exec_result": client.containers.get(id).exec_run(cmd)}
+    (exit_code, result) = client.containers.get(id).exec_run(cmd, stream=False)
+    return {"exec_result": result, "exit_code": exit_code}
+
+
+@api.post("/containers/{id}/exec_run_stream", response_class=StreamingResponse)
+async def exec_run_container_stream(id: str, cmd: str, client: DockerClientDep):
+    (_, result) = client.containers.get(id).exec_run(cmd, stream=True, stdout=True, stderr=True)
+    print(result.next())
+    return StreamingResponse(result)
 
 
 @api.post("/links/{id}/delay")

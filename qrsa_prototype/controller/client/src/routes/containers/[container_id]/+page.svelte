@@ -5,7 +5,7 @@
 
 	export let data: PageData;
 	let container: ContainerInfo | undefined;
-	container = $containers.find((c) => c.id === data.container_id);
+	$: container = $containers.find((c) => c.id === data.container_id);
 </script>
 
 <section>

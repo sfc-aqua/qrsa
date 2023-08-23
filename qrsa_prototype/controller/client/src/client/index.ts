@@ -12,6 +12,7 @@ export { ContainerStatus } from './models/ContainerStatus';
 export type { HTTPValidationError } from './models/HTTPValidationError';
 export type { PortInfo } from './models/PortInfo';
 export type { ProcessesInfo } from './models/ProcessesInfo';
+export { PumbaDelayDistribution } from './models/PumbaDelayDistribution';
 export type { ValidationError } from './models/ValidationError';
 
 export { DefaultService } from './services/DefaultService';

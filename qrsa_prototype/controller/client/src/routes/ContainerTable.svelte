@@ -10,6 +10,7 @@
 			''
 		);
 	};
+	console.log(containers)
 </script>
 
 <table>
@@ -17,6 +18,7 @@
 		<tr>
 			<th>ID</th>
 			<th>Name</th>
+			<th>IP</th>
 			<th>Status</th>
 			<th>Port</th>
 			<th>Action</th>
@@ -27,6 +29,7 @@
 			<tr>
 				<td>{c.id}</td>
 				<td>{c.name}</td>
+				<td>{c.attrs["NetworkSettings"]["Networks"]["qrsa_qrsa_net"]["IPAddress"]}</td>
 				<td>{c.status}</td>
 				<td>{convertPortInfo(c.ports)}</td>
 				{#if c.status == 'exited'}

@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { containers } from '../stores/containers';
+	import Ping from './Ping.svelte';
 	export let qnodeId: string | undefined;
 	let currentQNodeId: string | undefined;
 	$: qnode = $containers.find((c) => c.id === qnodeId);
@@ -12,5 +13,6 @@
 	<div>
 		{qnodeId}
 		<h1>{qnode?.name}</h1>
+		<Ping containerId={qnodeId} />
 	</div>
 {/if}
