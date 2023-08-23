@@ -33,6 +33,7 @@ services:
       - ./logs:/usr/app/logs:rw
     ports:
       - 8080
+    hostname: qnode1
     networks:
       qrsa_net:
         ipv4_address: 172.18.0.2
@@ -45,6 +46,7 @@ services:
     working_dir: /usr/app
     ports:
       - 8080
+    hostname: qnode2
     networks:
       qrsa_net:
         ipv4_address: 172.18.0.3
@@ -61,6 +63,7 @@ services:
     working_dir: /usr/app
     ports:
       - 8080
+    hostname: qnode3
     networks:
       qrsa_net:
         ipv4_address: 172.18.0.4

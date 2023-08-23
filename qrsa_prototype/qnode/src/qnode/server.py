@@ -24,7 +24,9 @@ def generate_config() -> None:
     with open("./config/default_config.yml", "r") as f:
         config = yaml.safe_load(f)
 
+    # add config pydantic model to validate given config
     # update default config with current ip address
-    config["ip_address"] = ip_address
+    config["meta"]["ip_address"] = ip_address
+    config["meta"]["hostname"] = hostname
 
     return config
