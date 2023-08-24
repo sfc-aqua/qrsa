@@ -1,13 +1,14 @@
 import uuid
 import json
 import aiohttp
-from typing import Dict, Any
+from typing import List, Dict, Any
 from dependency_injector.providers import Configuration
 
 from common.models.ruleset import RuleSet
 from common.models.connection_setup_request import ConnectionSetupRequest
 from common.models.connection_setup_response import ConnectionSetupResponse
 from common.models.performance_indicator import PerformanceIndicator
+from common.models.link_allocation_update import LinkAllocationUpdate
 from common.models.connection import ConnectionMeta
 from common.type_utils import IpAddressType
 
@@ -28,6 +29,8 @@ class ConnectionManager(AbstractConnectionManager):
         self.application_id_to_connection_id: Dict[str, str] = {}
         # connection_id -> ConnectionMeta
         self.running_connections: Dict[str, ConnectionMeta] = {}
+        # neighbor address -> lau
+        self.sent_la: Dict[IpAddressType, LinkAllocationUpdate] = {}
 
     async def respond_to_connection_setup_request(
         self,
@@ -40,10 +43,10 @@ class ConnectionManager(AbstractConnectionManager):
 
         A ruleset for this responder node is returned here.
 
-        Arguments: 
+        Arguments:
             given_request: ConnectionSetupRequest that is received at the responder node
             performance_indicator: PerformanceIndicator of this node
-        
+
         Returns:
             str: Connection id for this RuleSet
             RuleSet: A ruleset for this responder node
@@ -140,9 +143,23 @@ class ConnectionManager(AbstractConnectionManager):
         )
         return response
 
-    async def send_lau_update(self, proposed_la: RuleSet):
-        print("send lau update")
-        pass
+    async def send_lau_update(
+        self, neighbors: List[IpAddressType], proposed_la: RuleSet
+    ):
+        """
+        Send LAU update to the neighbor nodes
+        """
+        for neighbor in neighbors:
+            # If this node has larger ip address than the neighbor's ip address,send lau update
+            if self.config["meta"]["ip_address"] > neighbor:
+                # send lau update to the host and get accept message
+                # This response could include a different proposed lau from neighbor
+                # When we have more number of rulesets
+                lau_update_response = self.send_message(
+                    proposed_la.model_dump_json(),
+                    neighbor,
+                    "link_allocation_update",
+                )
 
     async def send_message(
         self,
@@ -151,7 +168,7 @@ class ConnectionManager(AbstractConnectionManager):
         endpoint: str,
         headers: Dict[str, str] = {"Content-Type": "application/json"},
         port: int = 8080,  # tempral
-    ):
+    ) -> Any:
         """
         Send a message to a destination
         message needs to implement model_dump_json()

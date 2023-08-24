@@ -6,6 +6,7 @@ from dependency_injector.wiring import inject, Provide
 from common.models.connection_setup_request import ConnectionSetupRequest
 from common.models.connection_setup_response import ConnectionSetupResponse
 from common.models.connection_setup_reject import ConnectionSetupReject
+from common.models.link_allocation_update import LinkAllocationUpdate
 from common.log.logger import logger
 
 
@@ -50,10 +51,11 @@ async def handle_connection_setup_request(
         # Get my performance indicator
         logger.debug("Connection Setup Request reached to the responder")
         performance_indicator = hardware_monitor.get_performance_indicator()
-        connection_id, responder_ruleset = (
-            await connection_manager.respond_to_connection_setup_request(
-                request, performance_indicator
-            )
+        (
+            connection_id,
+            responder_ruleset,
+        ) = await connection_manager.respond_to_connection_setup_request(
+            request, performance_indicator
         )
         rule_engine.accept_ruleset(connection_id, responder_ruleset)
         return JSONResponse(
@@ -83,6 +85,7 @@ async def handle_connection_setup_response(
     connection_manager: ConnectionManager = Depends(
         Provide[Container.connection_manager]
     ),
+    routing_daemon: RoutingDaemon = Depends(Provide[Container.routing_daemon]),
     rule_engine: RuleEngine = Depends(Provide[Container.rule_engine]),
 ) -> dict:
     """
@@ -93,11 +96,13 @@ async def handle_connection_setup_response(
     logger.debug("Received connection setup response")
 
     # Get proposed lau from rule engine based on current running ruleset
-    proposed_la = rule_engine.accept_ruleset(
-        response.connection_id, response.ruleset
-    )
+    proposed_la = rule_engine.accept_ruleset(response.connection_id, response.ruleset)
 
-    connection_manager.send_lau_update(proposed_la)
+    # Get all the nighbor nodes to send laus
+    neighbor_nodes = routing_daemon.get_neighbor_nodes()
+    # Send LAU update to the next hop
+    logger.debug("Sending LAU update to the next hop")
+    await connection_manager.send_lau_update(neighbor_nodes, proposed_la)
     return JSONResponse(
         content={"message": "Received connection setup response"},
         headers={"Content-Type": "application/json"},
@@ -109,9 +114,23 @@ async def handle_connection_setup_reject(reject: ConnectionSetupReject):
     return {"message": "Received connection setup reject"}
 
 
-@router.post("/lau_update")
-async def handle_lau_update():
-    return {"message": "Received LAU update"}
+@router.post("/link_allocation_update")
+async def handle_lau_update(
+    proposed_lau: LinkAllocationUpdate,
+    rule_engine: RuleEngine = Depends(Provide[Container.rule_engine]),
+):
+    """
+    Receive link allocation from neighbor node which has larger ip address
+    """
+    logger.debug("Received LAU update")
+    # Decide this lau is acceptable or not.
+    # For now, the proposed lau is always acceptable at the first round
+    (accepted, _new_proposed_lau) = rule_engine.accept_lau(proposed_lau)
+    if accepted:
+        # Send accept response
+        return {"message": "LAU Accepted"}
+    else:
+        raise NotImplementedError("Unacceptable LAU is not yet implemented")
 
 
 @router.post("/barrier")

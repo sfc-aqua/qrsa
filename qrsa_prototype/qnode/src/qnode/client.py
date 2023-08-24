@@ -4,12 +4,14 @@ import requests
 import ipaddress
 from typing import Union, List
 from ipaddress import IPv4Address, IPv6Address
-from dependency_injector.wiring import inject
+from dependency_injector.wiring import inject, Provide
 
 from common.models.connection_setup_request import ConnectionSetupRequest
 from common.models.app_performance_requirement import ApplicationPerformanceRequirement
 from common.models.performance_indicator import PerformanceIndicator
 
+from qnode.containers import Container
+from qnode.connection_manager.connection_manager import ConnectionManager
 
 hostname = socket.gethostname()
 ip_address = socket.gethostbyname(hostname)
@@ -29,6 +31,7 @@ class QRSAClient:
         self,
         destination: Union[IPv4Address, IPv6Address],
         application_perofrmance_request: ApplicationPerformanceRequirement,
+        connection_manager: ConnectionManager = Provide[Container.connection_manager],
     ):
         # Generate random application id
         application_id = str(uuid.uuid4())

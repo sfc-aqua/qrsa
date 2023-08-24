@@ -1,8 +1,9 @@
-from typing import Dict
+from typing import Union, Optional, Tuple, Dict
 from queue import Queue
 
 from common.models.ruleset import RuleSet
 from common.models.resource import ResourceMeta
+from common.models.link_allocation_update import LinkAllocationUpdate
 from common.log.logger import logger
 
 from qnode.rule_engine.ruleset_runtime import RuleSetRuntime
@@ -39,6 +40,16 @@ class RuleEngine:
 
     def get_available_link_resource(self) -> ResourceMeta:
         return self.available_link_resource.get()
+
+    def accept_lau(
+        self, lau: LinkAllocationUpdate
+    ) -> Tuple[bool, Optional[LinkAllocationUpdate]]:
+        """
+        Check the currently running rulesets and decide whether to accept the LAU or not.
+        """
+        # If false, send new proposed LAU back
+        # For now, rule engine always accepts lau
+        return (True, None)
 
     def accept_ruleset(self, connection_id: str, ruleset: RuleSet):
         # TODO: implement policy and pptsn relationship

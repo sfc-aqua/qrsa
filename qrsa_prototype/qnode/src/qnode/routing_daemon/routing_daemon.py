@@ -1,5 +1,6 @@
-from typing import Union
-from ipaddress import IPv4Address, IPv6Address
+from typing import List, Union
+
+from common.type_utils import IpAddressType
 
 
 class RoutingDaemon:
@@ -20,7 +21,14 @@ class RoutingDaemon:
         for route in routing_info:
             self.routing_table[route["destination"]] = route["next_hop"]
 
-    def get_next_hop(
-        self, destination: Union[IPv4Address, IPv6Address]
-    ) -> Union[IPv4Address, IPv6Address]:
+    def get_neighbor_nodes(self) -> List[IpAddressType]:
+        neighbors = []
+        for dest, next_hop in self.routing_table.items():
+            # When next hop is the destination, it means this destination is neighbor
+            if next_hop == dest:
+                neighbors.append(dest)
+        return neighbors
+                
+
+    def get_next_hop(self, destination: IpAddressType) -> IpAddressType:
         pass
