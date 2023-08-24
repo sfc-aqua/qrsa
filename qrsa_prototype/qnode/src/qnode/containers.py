@@ -16,12 +16,7 @@ class Container(containers.DeclarativeContainer):
 
     wiring_config = containers.WiringConfiguration(
         modules=["qnode.endpoints", "qnode.client"],
-        packages=[
-            "qnode.connection_manager",
-            "qnode.hardware_monitor",
-            "qnode.routing_daemon",
-            "qnode.rule_engine",
-        ],
+        packages=["qnode"],
     )
     config = providers.Configuration("config")
 

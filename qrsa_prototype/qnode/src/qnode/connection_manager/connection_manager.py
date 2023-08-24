@@ -1,6 +1,7 @@
 import uuid
 import json
 import aiohttp
+import ipaddress
 from typing import List, Dict, Any
 from dependency_injector.providers import Configuration
 
@@ -11,6 +12,7 @@ from common.models.performance_indicator import PerformanceIndicator
 from common.models.link_allocation_update import LinkAllocationUpdate
 from common.models.connection import ConnectionMeta
 from common.type_utils import IpAddressType
+from common.log.logger import logger
 
 from qnode.connection_manager.ruleset_factory import RuleSetFactory
 from qnode.connection_manager.interface import AbstractConnectionManager
@@ -51,6 +53,7 @@ class ConnectionManager(AbstractConnectionManager):
             str: Connection id for this RuleSet
             RuleSet: A ruleset for this responder node
         """
+        logger.debug("Connection Setup Request reached to the responder")
         # Get my ip address
         ip_address = self.config["meta"]["ip_address"]
 
@@ -78,28 +81,32 @@ class ConnectionManager(AbstractConnectionManager):
             performance_indicators=given_request.performance_indicators,
         )
 
+        self_ruleset = None
         # send rulesets to intermediate nodes
         for host in given_request.host_list:
             if host == ip_address:
                 # The last ruleset goes to this node itself.
                 # This doesn't have to be sent to other nodes.
-                return rulesets[host]
+                self_ruleset = rulesets[host]
+            else:
+                logger.debug(f"Sending ruleset to {host}")
+                # Take a ruleset and send it to destination
+                connection_setup_response_json = ConnectionSetupResponse(
+                    **{
+                        "application_id": given_request.application_id,
+                        "connection_id": connection_id,
+                        "ruleset": rulesets[host],
+                    }
+                ).model_dump_json()
 
-            # Take a ruleset and send it to destination
-            connection_setup_response_json = ConnectionSetupResponse(
-                **{
-                    "application_id": given_request.application_id,
-                    "connection_id": connection_id,
-                    "ruleset": rulesets[host],
-                }
-            ).model_dump_json()
-
-            # Send message in json format
-            response = await self.send_message(
-                connection_setup_response_json,
-                host,
-                "connection_setup_response",
-            )
+                # Send message in json format
+                response = await self.send_message(
+                    connection_setup_response_json,
+                    host,
+                    "connection_setup_response",
+                )
+                logger.debug(f"Connection setup response: {response}")
+        return self_ruleset
 
     async def forward_connection_setup_request(
         self,
@@ -119,21 +126,21 @@ class ConnectionManager(AbstractConnectionManager):
         )
 
         # Append this node's performance indicator to the request
-        given_request.performance_indicator |= {
+        given_request.performance_indicators |= {
             self.config["meta"]["ip_address"]: performance_indicator
         }
 
         # Create a new request based  on forward request
         app_req = given_request.app_performance_requirement
+        given_request.host_list.append(self.config["meta"]["ip_address"])
+
         new_request_json = ConnectionSetupRequest(
             **{
                 "header": given_request.header,
-                "appliaction_id": given_request.application_id,
+                "application_id": given_request.application_id,
                 "app_performance_requirement": app_req,
-                "performance_indicator": given_request.performance_indicator,
-                "host_list": given_request.host_list.append(
-                    self.config["meta"]["ip_address"]
-                ),
+                "performance_indicators": given_request.performance_indicators,
+                "host_list": given_request.host_list,
             }
         ).model_dump_json()
 
@@ -144,7 +151,7 @@ class ConnectionManager(AbstractConnectionManager):
         return response
 
     async def send_lau_update(
-        self, neighbors: List[IpAddressType], proposed_la: RuleSet
+        self, neighbors: List[IpAddressType], proposed_la: LinkAllocationUpdate
     ):
         """
         Send LAU update to the neighbor nodes
@@ -155,10 +162,13 @@ class ConnectionManager(AbstractConnectionManager):
                 # send lau update to the host and get accept message
                 # This response could include a different proposed lau from neighbor
                 # When we have more number of rulesets
-                lau_update_response = self.send_message(
+                lau_update_response = await self.send_message(
                     proposed_la.model_dump_json(),
                     neighbor,
                     "link_allocation_update",
+                )
+                logger.debug(
+                    f"LAU update response: {lau_update_response} from {neighbor}"
                 )
 
     async def send_message(
@@ -182,7 +192,6 @@ class ConnectionManager(AbstractConnectionManager):
                     headers=headers,
                 ) as response:
                     resp = await response.read()
-                    print(type(resp), resp)
                     return resp
         except Exception as e:
             raise e

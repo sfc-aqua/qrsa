@@ -68,7 +68,7 @@ async def handle_connection_setup_request(
     # Add performance indicator to the request
     performance_indicator = hardware_monitor.get_performance_indicator()
     next_hop_address = routing_daemon.get_next_hop(request.header.dst)
-    connection_manager.forward_connection_setup_request(
+    await connection_manager.forward_connection_setup_request(
         request, performance_indicator, next_hop_address
     )
     logger.debug("Connection Setup Request forwarded to the next hop")

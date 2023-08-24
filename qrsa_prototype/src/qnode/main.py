@@ -3,7 +3,7 @@ import uvicorn
 
 from qnode import server
 
-app = server.create_server()
+app, _ = server.create_server()
 
 
 def main():

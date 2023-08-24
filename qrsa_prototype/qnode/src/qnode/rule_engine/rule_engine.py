@@ -4,6 +4,7 @@ from queue import Queue
 from common.models.ruleset import RuleSet
 from common.models.resource import ResourceMeta
 from common.models.link_allocation_update import LinkAllocationUpdate
+from common.models.link_allocation_policy import LinkAllocationPolicy
 from common.log.logger import logger
 
 from qnode.rule_engine.ruleset_runtime import RuleSetRuntime
@@ -61,6 +62,16 @@ class RuleEngine:
         # Initialize runtime
         runtime = RuleSetRuntime(ruleset)
         self.running_runtime[connection_id] = runtime
+
+        # Once a new RuleSet is accepted, the link allocation plicy must be updated
+        # Based on running rulesets, rule engine decides the next link allocation policy
+        new_la = LinkAllocationUpdate(
+            **{
+                "connection_id": str(connection_id),
+                "proposed_link_allocation": LinkAllocationPolicy(**{}),
+            }
+        )
+        return new_la
 
     def terminate_ruleset(self, connection_id: str):
         pass
