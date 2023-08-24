@@ -22,7 +22,7 @@ class RuleEngine:
         # A realtime controller to control hardware devices
         self.rtc = rtc
 
-    async def get_resource(self, resource_meta: ResourceMeta):
+    async def get_resource(self):
         """
         Accept a resource from RTC.
 

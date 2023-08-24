@@ -7,11 +7,11 @@ class JsonFormatter(logging.Formatter):
         log_data = {
             "level": record.levelname,
             "message": record.getMessage(),
-            "logger": record.name,
-            "module": record.module,
+            # "logger": record.name,
+            # "module": record.module,
             "function": record.funcName,
-            "line": record.lineno,
-            "pathname": record.pathname,
+            # "line": record.lineno,
+            # "pathname": record.pathname,
             "exception": None,
         }
 

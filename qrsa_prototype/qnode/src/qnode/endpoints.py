@@ -51,13 +51,20 @@ async def handle_connection_setup_request(
         # Get my performance indicator
         logger.debug("Connection Setup Request reached to the responder")
         performance_indicator = hardware_monitor.get_performance_indicator()
+
+        # Create RuleSet and respond to incoming request
         (
             connection_id,
             responder_ruleset,
         ) = await connection_manager.respond_to_connection_setup_request(
             request, performance_indicator
         )
-        rule_engine.accept_ruleset(connection_id, responder_ruleset)
+
+        # Get proposed lau from rule engine based on current running ruleset
+        proposed_lau = rule_engine.accept_ruleset(connection_id, responder_ruleset)
+
+        # Get neighbor information from routing daemon
+
         return JSONResponse(
             content={"message": "Received connection setup request"},
             headers={"Content-Type": "application/json"},
@@ -115,6 +122,7 @@ async def handle_connection_setup_reject(reject: ConnectionSetupReject):
 
 
 @router.post("/link_allocation_update")
+@inject
 async def handle_lau_update(
     proposed_lau: LinkAllocationUpdate,
     rule_engine: RuleEngine = Depends(Provide[Container.rule_engine]),
