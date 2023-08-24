@@ -15,7 +15,7 @@ class Container(containers.DeclarativeContainer):
     """
 
     wiring_config = containers.WiringConfiguration(
-        modules=["qnode.endpoints", "qnode.client"],
+        modules=["qnode.endpoints"],
         packages=["qnode"],
     )
     config = providers.Configuration("config")

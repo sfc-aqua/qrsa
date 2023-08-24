@@ -1,5 +1,6 @@
 import uuid
 import aiohttp
+import asyncio
 from typing import Tuple, List, Dict, Any
 from dependency_injector.providers import Configuration
 
@@ -28,6 +29,8 @@ class ConnectionManager(AbstractConnectionManager):
         self.ruleset_factory = RuleSetFactory()
         # application_id -> connection_id
         self.application_id_to_connection_id: Dict[str, str] = {}
+        # application_id -> ConnectionMeta
+        self.pending_connections: Dict[str, ConnectionMeta] = {}
         # connection_id -> ConnectionMeta
         self.running_connections: Dict[str, ConnectionMeta] = {}
         # neighbor address -> lau
@@ -62,6 +65,15 @@ class ConnectionManager(AbstractConnectionManager):
                 "host_list": [self.config["meta"]["ip_address"]],
             }
         ).model_dump_json()
+
+        self.pending_connections[application_id] = ConnectionMeta(
+            **{
+                "prev_hop": None,
+                "next_hop": next_hop,
+                "source": self.config["meta"]["ip_address"],
+                "destination": destination,
+            }
+        )
 
         # Send request to next hop
         response, status_code = await self.send_message(
@@ -160,6 +172,10 @@ class ConnectionManager(AbstractConnectionManager):
             destination=given_request.header.dst,
         )
 
+        # When the connection setup response is received,
+        # this connection meta will be moved to running connections
+        self.pending_connections[given_request.application_id] = connection_meta
+
         # Append this node's performance indicator to the request
         given_request.performance_indicators |= {
             self.config["meta"]["ip_address"]: performance_indicator
@@ -185,26 +201,36 @@ class ConnectionManager(AbstractConnectionManager):
         )
         return response
 
+    def update_pending_connection_to_running_connection(
+        self, connection_id: str, application_id: str
+    ):
+        print(self.pending_connections)
+        if self.pending_connections.get(application_id) is None:
+            raise Exception(
+                f"Application id {application_id} is not in pending connections"
+            )
+        else:
+            self.running_connections[connection_id] = self.pending_connections[
+                application_id
+            ]
+
     async def send_lau_update(
         self, neighbors: List[IpAddressType], proposed_la: LinkAllocationUpdate
     ):
         """
         Send LAU update to the neighbor nodes
         """
-        for neighbor in neighbors:
-            # If this node has larger ip address than the neighbor's ip address,send lau update
-            if self.config["meta"]["ip_address"] > neighbor:
-                # send lau update to the host and get accept message
-                # This response could include a different proposed lau from neighbor
-                # When we have more number of rulesets
-                lau_update_response, status_code = await self.send_message(
-                    proposed_la.model_dump_json(),
-                    neighbor,
-                    "link_allocation_update",
-                )
-                logger.debug(
-                    f"LAU update response: {lau_update_response} from {neighbor}"
-                )
+        # If this node has larger ip address than the neighbor's ip address,send lau update
+        tasks = [
+            self.send_message(
+                proposed_la.model_dump_json(), neighbor, "link_allocation_update"
+            )
+            for neighbor in neighbors
+            if self.config["meta"]["ip_address"] > neighbor
+        ]
+        results = await asyncio.gather(*tasks)
+        logger.debug(f"Sent LAU update to {neighbors}")
+        return results
 
     async def send_message(
         self,

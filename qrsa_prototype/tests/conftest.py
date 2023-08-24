@@ -13,7 +13,7 @@ from common.models.performance_indicator import PerformanceIndicator
 
 @pytest.fixture
 def test_client():
-    app, _ = server.create_server()
+    app = server.create_server()
     return TestClient(app)
 
 

@@ -7,6 +7,7 @@ from common.models.connection_setup_request import ConnectionSetupRequest
 from common.models.connection_setup_response import ConnectionSetupResponse
 from common.models.connection_setup_reject import ConnectionSetupReject
 from common.models.link_allocation_update import LinkAllocationUpdate
+from common.models.application_bootstrap import ApplicationBootstrap
 from common.log.logger import logger
 
 
@@ -22,6 +23,37 @@ router = APIRouter()
 @router.get("/heartbeat")
 def heartbeat() -> dict:
     return {"message": "Alive"}
+
+
+# Application will use this function to start entire connection setup process
+@router.post("/start_connection_setup")
+@inject
+async def send_connection_setup_request(
+    app_bootstrap: ApplicationBootstrap,
+    connection_manager: ConnectionManager = Depends(
+        Provide[Container.connection_manager]
+    ),
+    hardware_monitor: HardwareMonitor = Depends(Provide[Container.hardware_monitor]),
+    routing_daemon: RoutingDaemon = Depends(Provide[Container.routing_daemon]),
+    config: Any = Depends(Provide[Container.config]),
+):
+    logger.debug(f"Start application at {config['meta']['hostname']}")
+    # Get the latest hardware perofrmance indicator
+    performance_indicator = hardware_monitor.get_performance_indicator()
+
+    # TODO: Get next hop from routing table
+    next_hop = routing_daemon.get_next_hop(app_bootstrap.destination)
+
+    await connection_manager.send_connection_setup_request(
+        app_bootstrap.destination,
+        next_hop,
+        app_bootstrap.application_performance_requirement,
+        performance_indicator,
+    )
+    return JSONResponse(
+        content={"message": "Connection setup done"},
+        headers={"Content-Type": "application/json"},
+    )
 
 
 @router.post("/connection_setup_request")
@@ -64,6 +96,12 @@ async def handle_connection_setup_request(
         proposed_lau = rule_engine.accept_ruleset(connection_id, responder_ruleset)
 
         # Get neighbor information from routing daemon
+        neighbors = routing_daemon.get_neighbor_nodes()
+
+        # Send LAU update to the next hop
+        responses = await connection_manager.send_lau_update(neighbors, proposed_lau)
+
+        # Send barrier message
 
         return JSONResponse(
             content={"message": "Received connection setup request"},
@@ -108,8 +146,14 @@ async def handle_connection_setup_response(
     # Get all the nighbor nodes to send laus
     neighbor_nodes = routing_daemon.get_neighbor_nodes()
     # Send LAU update to the next hop
-    logger.debug("Sending LAU update to the next hop")
-    await connection_manager.send_lau_update(neighbor_nodes, proposed_la)
+    results = await connection_manager.send_lau_update(neighbor_nodes, proposed_la)
+
+    # Send barrier message
+
+    # Update pending connection to running connection
+    connection_manager.update_pending_connection_to_running_connection(
+        response.connection_id, response.application_id
+    )
     return JSONResponse(
         content={"message": "Received connection setup response"},
         headers={"Content-Type": "application/json"},

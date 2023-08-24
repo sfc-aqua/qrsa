@@ -6,5 +6,5 @@ class ApplicationPerformanceRequirement(BaseModel):
         0.0, ge=0.0, le=1.0, description="Required fidelity for this application."
     )
     minimum_bell_pair_bandwidth: int = Field(
-        0.0, ge=0.0, description="Required bell pair andwidth for this application."
+        0, ge=0.0, description="Required bell pair andwidth for this application."
     )

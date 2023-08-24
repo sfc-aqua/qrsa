@@ -4,7 +4,6 @@ from fastapi import FastAPI
 
 from qnode.endpoints import router
 from qnode.containers import Container
-from qnode.client import QRSAClient
 from common.models.configs.config import Config
 
 
@@ -16,13 +15,10 @@ def create_server() -> FastAPI:
     # https://github.com/ets-labs/python-dependency-injector/issues/726
     container.config.from_dict(config.model_dump())
 
-    # In order to use dependency injection, we need to wire up the container
-    client = QRSAClient()
-
     app = FastAPI()
     app.container = container
     app.include_router(router)
-    return (app, client)
+    return app
 
 
 def generate_config() -> Config:
