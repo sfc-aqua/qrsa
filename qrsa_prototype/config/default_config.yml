@@ -2,6 +2,7 @@ meta:
   name: "qnode"
   host_name: "qnode"
   ip_address: "0.0.0.0"
+  pptsn_buffer_size: 10
 
 routing_daemon:
   routing_type: "static"

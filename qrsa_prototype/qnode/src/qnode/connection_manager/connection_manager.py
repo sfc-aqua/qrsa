@@ -10,6 +10,7 @@ from common.models.connection_setup_response import ConnectionSetupResponse
 from common.models.performance_indicator import PerformanceIndicator
 from common.models.link_allocation_update import LinkAllocationUpdate
 from common.models.connection import ConnectionMeta
+from common.models.barrier import Barrier
 from common.models.app_performance_requirement import ApplicationPerformanceRequirement
 from common.type_utils import IpAddressType
 from common.log.logger import logger
@@ -47,7 +48,8 @@ class ConnectionManager(AbstractConnectionManager):
         Send connection setup request to the next hop
         This function can only be called in the initiator node
         """
-        # Generate random application id to map application and connection_id given by responder
+        # Generate random application id to map application
+        # and connection_id given by responder
         application_id = str(uuid.uuid4())
 
         # Create connection setup request
@@ -114,7 +116,7 @@ class ConnectionManager(AbstractConnectionManager):
         )
 
         # create connection id
-        connection_id = f"{uuid.uuid4()}"
+        connection_id = str(uuid.uuid4())
         self.running_connections[connection_id] = connection_meta
 
         # Append this node's information to the given request
@@ -153,7 +155,7 @@ class ConnectionManager(AbstractConnectionManager):
                     "connection_setup_response",
                 )
                 logger.debug(f"Sent RuleSet to {host}")
-        return self_ruleset
+        return (connection_id, self_ruleset)
 
     async def forward_connection_setup_request(
         self,
@@ -204,7 +206,6 @@ class ConnectionManager(AbstractConnectionManager):
     def update_pending_connection_to_running_connection(
         self, connection_id: str, application_id: str
     ):
-        print(self.pending_connections)
         if self.pending_connections.get(application_id) is None:
             raise Exception(
                 f"Application id {application_id} is not in pending connections"
@@ -220,7 +221,8 @@ class ConnectionManager(AbstractConnectionManager):
         """
         Send LAU update to the neighbor nodes
         """
-        # If this node has larger ip address than the neighbor's ip address,send lau update
+        # If this node has larger ip address
+        # than the neighbor's ip address,send lau update
         tasks = [
             self.send_message(
                 proposed_la.model_dump_json(), neighbor, "link_allocation_update"
@@ -229,8 +231,64 @@ class ConnectionManager(AbstractConnectionManager):
             if self.config["meta"]["ip_address"] > neighbor
         ]
         results = await asyncio.gather(*tasks)
-        logger.debug(f"Sent LAU update to {neighbors}")
+        logger.debug(
+            f"Sent LAU update to {[nb for nb in neighbors if self.config['meta']['ip_address'] > nb]} from {self.config['meta']['hostname']}"  # noqa
+        )
         return results
+
+    async def send_barrier(
+        self,
+        connection_id: str,
+        neighbors: List[IpAddressType],
+        target_pptsns: Dict[IpAddressType, int],
+    ) -> Dict[IpAddressType, int]:
+        tasks = [
+            self.send_message(
+                Barrier(
+                    **{
+                        "header": {
+                            "src": self.config["meta"]["ip_address"],
+                            "dst": neighbor,
+                        },
+                        "connection_id": connection_id,
+                        "target_pptsn": target_pptsns[neighbor],
+                    }
+                ).model_dump_json(),
+                neighbor,
+                "barrier",
+            )
+            for neighbor in neighbors
+            if self.config["meta"]["ip_address"] > neighbor
+        ]
+        results = await asyncio.gather(*tasks)
+        logger.debug(
+            f"Sent barrier message to {[nb for nb in neighbors if self.config['meta']['ip_address'] > nb]} from {self.config['meta']['hostname']}"  # noqa
+        )
+        return results
+
+    async def send_barrier_response(
+        self,
+        connection_id: str,
+        neighbor: IpAddressType,
+        agreed_pptsn: int,
+    ):
+        """
+        A node who received barrier message will send barrier response with agreed pptsn
+        """
+        barrier = Barrier(
+            **{
+                "header": {
+                    "src": self.config["meta"]["ip_address"],
+                    "dst": neighbor,
+                },
+                "connection_id": connection_id,
+                "target_pptsn": agreed_pptsn,
+            }
+        )
+        response, _ = await self.send_message(
+            barrier.model_dump_json(), neighbor, "barrier_response"
+        )
+        return response
 
     async def send_message(
         self,

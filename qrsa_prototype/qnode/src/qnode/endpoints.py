@@ -8,6 +8,7 @@ from common.models.connection_setup_response import ConnectionSetupResponse
 from common.models.connection_setup_reject import ConnectionSetupReject
 from common.models.link_allocation_update import LinkAllocationUpdate
 from common.models.application_bootstrap import ApplicationBootstrap
+from common.models.barrier import Barrier
 from common.log.logger import logger
 
 
@@ -35,21 +36,25 @@ async def send_connection_setup_request(
     ),
     hardware_monitor: HardwareMonitor = Depends(Provide[Container.hardware_monitor]),
     routing_daemon: RoutingDaemon = Depends(Provide[Container.routing_daemon]),
+    rule_engine: RuleEngine = Depends(Provide[Container.rule_engine]),
     config: Any = Depends(Provide[Container.config]),
 ):
     logger.debug(f"Start application at {config['meta']['hostname']}")
+
     # Get the latest hardware perofrmance indicator
     performance_indicator = hardware_monitor.get_performance_indicator()
 
-    # TODO: Get next hop from routing table
+    # Get the next hop address from the destination address
     next_hop = routing_daemon.get_next_hop(app_bootstrap.destination)
 
+    # Send connection setup request to the next hop
     await connection_manager.send_connection_setup_request(
         app_bootstrap.destination,
         next_hop,
         app_bootstrap.application_performance_requirement,
         performance_indicator,
     )
+
     return JSONResponse(
         content={"message": "Connection setup done"},
         headers={"Content-Type": "application/json"},
@@ -99,9 +104,18 @@ async def handle_connection_setup_request(
         neighbors = routing_daemon.get_neighbor_nodes()
 
         # Send LAU update to the next hop
-        responses = await connection_manager.send_lau_update(neighbors, proposed_lau)
+        await connection_manager.send_lau_update(neighbors, proposed_lau)
+
+        # Get target pptsn with buffer from rule engine
+        target_pptsns = rule_engine.get_pptsns_with_buffer(neighbors, 10)
 
         # Send barrier message
+        await connection_manager.send_barrier(connection_id, neighbors, target_pptsns)
+
+        # At this point, the finalized pptsn should be prepared
+        finailized_pptsn = rule_engine.get_switching_pptsns(connection_id, neighbors)
+
+        logger.debug(f"Connection setup done. Finalized pptsn: {finailized_pptsn}")
 
         return JSONResponse(
             content={"message": "Received connection setup request"},
@@ -144,11 +158,17 @@ async def handle_connection_setup_response(
     proposed_la = rule_engine.accept_ruleset(response.connection_id, response.ruleset)
 
     # Get all the nighbor nodes to send laus
-    neighbor_nodes = routing_daemon.get_neighbor_nodes()
+    neighbors = routing_daemon.get_neighbor_nodes()
     # Send LAU update to the next hop
-    results = await connection_manager.send_lau_update(neighbor_nodes, proposed_la)
+    _ = await connection_manager.send_lau_update(neighbors, proposed_la)
+
+    # Get target pptsn with buffer from rule engine
+    target_pptsns = rule_engine.get_pptsns_with_buffer(neighbors, 10)
 
     # Send barrier message
+    await connection_manager.send_barrier(
+        response.connection_id, neighbors, target_pptsns
+    )
 
     # Update pending connection to running connection
     connection_manager.update_pending_connection_to_running_connection(
@@ -161,6 +181,7 @@ async def handle_connection_setup_response(
 
 
 @router.post("/connection_setup_reject")
+@inject
 async def handle_connection_setup_reject(reject: ConnectionSetupReject):
     return {"message": "Received connection setup reject"}
 
@@ -186,5 +207,57 @@ async def handle_lau_update(
 
 
 @router.post("/barrier")
-async def handle_barrier():
+@inject
+async def handle_barrier(
+    barrier: Barrier,
+    connection_manager: ConnectionManager = Depends(
+        Provide[Container.connection_manager]
+    ),
+    rule_engine: RuleEngine = Depends(Provide[Container.rule_engine]),
+):
+    """
+    A neighbor with larger ip will send barrier message
+    and this node (smaller ip) will respond to it
+    """
+    logger.debug(f"Received barrier from {barrier.header.src}")
+
+    # Check this node's target pptsn and send back
+    # This node's pptsn should always be larger since this node
+    # is responding to the barrier message?
+    pptsn_proposal = rule_engine.get_pptsns_with_buffer([barrier.header.src], 10)
+
+    # compare with the received pptsn
+    agreed_pptsn = max(pptsn_proposal[barrier.header.src], barrier.target_pptsn)
+
+    response = await connection_manager.send_barrier_response(
+        barrier.connection_id, barrier.header.src, agreed_pptsn
+    )
+
+    rule_engine.update_switching_pptsn(
+        barrier.connection_id, barrier.header.src, agreed_pptsn
+    )
+
+    logger.debug(f"Barrier response sent: {response}")
+
     return {"message": "Received barrier"}
+
+
+@router.post("/barrier_response")
+@inject
+async def handle_barrier_response(
+    barrier: Barrier,
+    rule_engine: RuleEngine = Depends(Provide[Container.rule_engine]),
+):
+    """
+    At this moment, nodes must agree on one pptsn
+    """
+    logger.debug("Received barrier response")
+
+    agreed_pptsn = barrier.target_pptsn
+
+    # Update switching pptsn
+    rule_engine.update_switching_pptsn(
+        barrier.connection_id, barrier.header.src, agreed_pptsn
+    )
+
+    return {"message": "Received barrier response"}

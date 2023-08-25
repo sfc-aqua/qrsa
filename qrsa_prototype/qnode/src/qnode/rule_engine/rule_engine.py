@@ -1,10 +1,11 @@
-from typing import Union, Optional, Tuple, Dict
+from typing import Optional, Tuple, Dict, List
 from queue import Queue
 
 from common.models.ruleset import RuleSet
 from common.models.resource import ResourceMeta
 from common.models.link_allocation_update import LinkAllocationUpdate
 from common.models.link_allocation_policy import LinkAllocationPolicy
+from common.type_utils import IpAddressType
 from common.log.logger import logger
 
 from qnode.rule_engine.ruleset_runtime import RuleSetRuntime
@@ -19,8 +20,14 @@ class RuleEngine:
         # When RTC notify the link entanglement is ready, meta information
         # of the link will be put into this queue
         self.available_link_resource: Queue[ResourceMeta] = Queue(maxsize=0)
+        # neighbor address -> pptsn (int)
+        # Track current sequence number of link entanglement with neighbor node
+        self.current_pptsn = {}
         # A realtime controller to control hardware devices
         self.rtc = rtc
+        # connection_id -> pptsn
+        # Check when a new link allocation policy is activated
+        self.la_switch_timings: Dict[str, Dict[IpAddressType, int]] = {}
 
     async def get_resource(self):
         """
@@ -42,11 +49,27 @@ class RuleEngine:
     def get_available_link_resource(self) -> ResourceMeta:
         return self.available_link_resource.get()
 
+    def get_current_pptsn(
+        self, neighbors: List[IpAddressType]
+    ) -> Dict[IpAddressType, int]:
+        return {neighbor: self.rtc.get_pptsn(neighbor) for neighbor in neighbors}
+
+    def get_pptsns_with_buffer(
+        self, neighbors: List[IpAddressType], buffer: int
+    ) -> Dict[IpAddressType, int]:
+        """
+        Get current pptsn and increment it by buffer
+        """
+        return {
+            neighbor: self.rtc.get_pptsn(neighbor) + buffer for neighbor in neighbors
+        }
+
     def accept_lau(
         self, lau: LinkAllocationUpdate
     ) -> Tuple[bool, Optional[LinkAllocationUpdate]]:
         """
-        Check the currently running rulesets and decide whether to accept the LAU or not.
+        Check the currently running rulesets and
+        decide whether to accept the LAU or not.
         """
         # If false, send new proposed LAU back
         # For now, rule engine always accepts lau
@@ -72,6 +95,26 @@ class RuleEngine:
             }
         )
         return new_la
+
+    def update_switching_pptsn(
+        self, connection_id: str, neighbor: IpAddressType, target_pptsn: int
+    ):
+        # Need to check if the current pptsn is smaller than target pptsn
+        if self.la_switch_timings.get(connection_id) is None:
+            self.la_switch_timings[connection_id] = {}
+        # Update switching pptsn
+        self.la_switch_timings[connection_id][neighbor] = target_pptsn
+
+    def get_switching_pptsns(
+        self, connection_id: str, neighbors: List[IpAddressType]
+    ) -> Dict[IpAddressType, int]:
+        """
+        Get switching pptsn based on the current running ruleset
+        """
+        return {
+            neighbor: self.la_switch_timings[connection_id][neighbor]
+            for neighbor in neighbors
+        }
 
     def terminate_ruleset(self, connection_id: str):
         pass
