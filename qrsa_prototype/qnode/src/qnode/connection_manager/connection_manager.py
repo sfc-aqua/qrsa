@@ -173,17 +173,14 @@ class ConnectionManager(AbstractConnectionManager):
         """
         Forward a received connection setup to next hop
         """
-        # Store information about this connection
-        connection_meta = ConnectionMeta(
-            prev_hop=given_request.host_list[-1],
-            next_hop=next_hop,
-            source=given_request.header.src,
-            destination=given_request.header.dst,
+        conn_info = ConnectionMeta(
+            **{
+                "prev_hop": given_request.host_list[-1],
+                "next_hop": next_hop,
+                "source": given_request.header.src,
+                "destination": given_request.header.dst,
+            }
         )
-
-        # When the connection setup response is received,
-        # this connection meta will be moved to running connections
-        self.pending_connections[given_request.application_id] = connection_meta
 
         # Append this node's performance indicator to the request
         given_request.performance_indicators |= {self.ip_address: performance_indicator}
@@ -206,6 +203,10 @@ class ConnectionManager(AbstractConnectionManager):
         response, status_code = await self.send_message(
             new_request_json, next_hop, "connection_setup_request"
         )
+
+        # When the connection setup response is received,
+        # this connection meta will be moved to running connections
+        self.pending_connections[given_request.application_id] = conn_info
         return response
 
     def update_pending_connection_to_running_connection(

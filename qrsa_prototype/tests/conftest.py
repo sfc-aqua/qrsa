@@ -9,6 +9,7 @@ from common.models.connection_setup_request import ConnectionSetupRequest
 from common.models.app_performance_requirement import ApplicationPerformanceRequirement
 from common.models.header import Header
 from common.models.performance_indicator import PerformanceIndicator
+from common.models.ruleset import RuleSet
 
 
 @pytest.fixture
@@ -72,12 +73,7 @@ def base_connection_setup_request(
         size: The number of hosts in the network
         position: The position of this node in the network (initiator is 0)
         """
-        if is_responder:
-            # responder node add its own performance indicator
-            # when they create a ruleset
-            host_list = base_hosts(size)[:position]
-        else:
-            host_list = base_hosts(size)[: position + 1]
+        host_list = base_hosts(size)[:position]
         performance_indicators = {
             i: j for i, j in zip(host_list, base_performance_indicators(position))
         }
@@ -88,7 +84,7 @@ def base_connection_setup_request(
 
         csr = ConnectionSetupRequest(
             header=header,
-            application_id="test_app_id",
+            application_id="application_id",
             app_performance_requirement=base_app_performance_requirement,
             performance_indicators=performance_indicators,
             host_list=host_list,
@@ -96,6 +92,16 @@ def base_connection_setup_request(
         return csr
 
     return _gen_connection_setup_request
+
+
+@pytest.fixture
+def base_rulesets(mocker: Any, base_hosts: Any) -> List[RuleSet]:
+    def _gen_rulesets(size: int, ruleset_id: str = "ruleset_id"):
+        return {
+            host: RuleSet(ruleset_id=ruleset_id, stages=[]) for host in base_hosts(size)
+        }
+
+    return _gen_rulesets
 
 
 @pytest.fixture
