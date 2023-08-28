@@ -8,13 +8,50 @@ def init_connection_manager() -> Any:
     def _inject_config(config: dict = None) -> ConnectionManager:
         if config is None:
             # default configuration
-            config = {"ip_address": "192.168.0.2"}
+            config = {"meta": {"hostname": "test", "ip_address": "192.168.0.2"}}
         return ConnectionManager(config)
 
     return _inject_config
 
 
 class TestConnectionManager:
+    @pytest.mark.asyncio
+    async def test_send_connection_setup_request(
+        self,
+        init_connection_manager: Any,
+        mocker: Any,
+        base_app_performance_requirement: Any,
+        base_performance_indicators: Any,
+    ) -> None:
+        """
+        Send connection setup request to neighbor node
+        """
+        # This node must be an initiator to send a connection setup request
+        cm = init_connection_manager()
+        mocker.patch("uuid.uuid4", return_value="application_id")
+        # This test won't send message but track the states
+        mocker.patch(
+            "qnode.connection_manager.connection_manager.ConnectionManager.send_message",
+            return_value=(None, 200),
+        )
+
+        destination = "192.168.0.4"
+        next_hop = "192.168.0.3"
+        performance_indicator = base_performance_indicators(1)[0]
+        await cm.send_connection_setup_request(
+            destination,
+            next_hop,
+            base_app_performance_requirement,
+            performance_indicator,
+        )
+        assert len(cm.running_connections) == 0
+        assert len(cm.pending_connections) == 1
+        assert cm.pending_connections.get("application_id") is not None
+        assert cm.pending_connections.get("application_id").next_hop == next_hop
+        assert cm.pending_connections.get("application_id").prev_hop is None
+        assert cm.pending_connections.get("application_id").source == "192.168.0.2"
+        assert cm.pending_connections.get("application_id").destination == destination
+
     @pytest.mark.asyncio
     async def test_respond_to_connection_setup_request(
         self,

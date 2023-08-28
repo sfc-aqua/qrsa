@@ -36,7 +36,6 @@ async def send_connection_setup_request(
     ),
     hardware_monitor: HardwareMonitor = Depends(Provide[Container.hardware_monitor]),
     routing_daemon: RoutingDaemon = Depends(Provide[Container.routing_daemon]),
-    rule_engine: RuleEngine = Depends(Provide[Container.rule_engine]),
     config: Any = Depends(Provide[Container.config]),
 ):
     logger.debug(f"Start application at {config['meta']['hostname']}")
@@ -48,12 +47,17 @@ async def send_connection_setup_request(
     next_hop = routing_daemon.get_next_hop(app_bootstrap.destination)
 
     # Send connection setup request to the next hop
-    await connection_manager.send_connection_setup_request(
+    response, status_code = await connection_manager.send_connection_setup_request(
         app_bootstrap.destination,
         next_hop,
         app_bootstrap.application_performance_requirement,
         performance_indicator,
     )
+
+    if status_code != 200:
+        raise RuntimeError("Connection setup request failed")
+
+    logger.debug(f"Connection setup request sent. response: {response}")
 
     return JSONResponse(
         content={"message": "Connection setup done"},

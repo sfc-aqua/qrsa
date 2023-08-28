@@ -27,6 +27,7 @@ class ConnectionManager(AbstractConnectionManager):
         config is set in Container.
         """
         self.config = config
+        self.ip_address = config["meta"]["ip_address"]
         self.ruleset_factory = RuleSetFactory()
         # application_id -> connection_id
         self.application_id_to_connection_id: Dict[str, str] = {}
@@ -48,7 +49,17 @@ class ConnectionManager(AbstractConnectionManager):
         Send connection setup request to the next hop
         This function can only be called in the initiator node
         """
-        # Generate random application id to map application
+        if self.ip_address == destination:
+            raise Exception(
+                f"Destination {destination} can't be the same as this node's ip address"
+            )
+
+        if self.ip_address == next_hop:
+            raise Exception(
+                f"Next hop {next_hop} can't be the same as this node's ip address"
+            )
+
+        # Generate random applicaion id to map application
         # and connection_id given by responder
         application_id = str(uuid.uuid4())
 
@@ -56,32 +67,31 @@ class ConnectionManager(AbstractConnectionManager):
         csr_json = ConnectionSetupRequest(
             **{
                 "header": {
-                    "src": self.config["meta"]["ip_address"],
+                    "src": self.ip_address,
                     "dst": destination,
                 },
                 "application_id": application_id,
                 "app_performance_requirement": application_performance_requirement,
-                "performance_indicators": {
-                    self.config["meta"]["ip_address"]: performance_indicator
-                },
-                "host_list": [self.config["meta"]["ip_address"]],
+                "performance_indicators": {self.ip_address: performance_indicator},
+                "host_list": [self.ip_address],
             }
         ).model_dump_json()
-
-        self.pending_connections[application_id] = ConnectionMeta(
-            **{
-                "prev_hop": None,
-                "next_hop": next_hop,
-                "source": self.config["meta"]["ip_address"],
-                "destination": destination,
-            }
-        )
 
         # Send request to next hop
         response, status_code = await self.send_message(
             csr_json, next_hop, "connection_setup_request"
         )
-        return response
+
+        # Add record of this connection to pending connections
+        self.pending_connections[application_id] = ConnectionMeta(
+            **{
+                "prev_hop": None,
+                "next_hop": next_hop,
+                "source": self.ip_address,
+                "destination": destination,
+            }
+        )
+        return (response, status_code)
 
     async def respond_to_connection_setup_request(
         self,
@@ -103,9 +113,6 @@ class ConnectionManager(AbstractConnectionManager):
             RuleSet: A ruleset for this responder node
         """
 
-        # Get my ip address
-        ip_address = self.config["meta"]["ip_address"]
-
         # create connection meta and register it to running connections
         connection_meta = ConnectionMeta(
             # at the end of host list, there should be the previous hop informaion
@@ -120,8 +127,8 @@ class ConnectionManager(AbstractConnectionManager):
         self.running_connections[connection_id] = connection_meta
 
         # Append this node's information to the given request
-        given_request.host_list.append(ip_address)
-        given_request.performance_indicators |= {ip_address: performance_indicator}
+        given_request.host_list.append(self.ip_address)
+        given_request.performance_indicators |= {self.ip_address: performance_indicator}
 
         # create ruleset
         rulesets = self.ruleset_factory.create_ruleset(
@@ -133,7 +140,7 @@ class ConnectionManager(AbstractConnectionManager):
         self_ruleset = None
         # send rulesets to intermediate nodes
         for host in given_request.host_list:
-            if host == ip_address:
+            if host == self.ip_address:
                 # The last ruleset goes to this node itself.
                 # This doesn't have to be sent to other nodes.
                 self_ruleset = rulesets[host]
@@ -179,13 +186,11 @@ class ConnectionManager(AbstractConnectionManager):
         self.pending_connections[given_request.application_id] = connection_meta
 
         # Append this node's performance indicator to the request
-        given_request.performance_indicators |= {
-            self.config["meta"]["ip_address"]: performance_indicator
-        }
+        given_request.performance_indicators |= {self.ip_address: performance_indicator}
 
         # Create a new request based  on forward request
         app_req = given_request.app_performance_requirement
-        given_request.host_list.append(self.config["meta"]["ip_address"])
+        given_request.host_list.append(self.ip_address)
 
         new_request_json = ConnectionSetupRequest(
             **{
@@ -228,7 +233,7 @@ class ConnectionManager(AbstractConnectionManager):
                 proposed_la.model_dump_json(), neighbor, "link_allocation_update"
             )
             for neighbor in neighbors
-            if self.config["meta"]["ip_address"] > neighbor
+            if self.ip_address > neighbor
         ]
         results = await asyncio.gather(*tasks)
         logger.debug(
@@ -247,7 +252,7 @@ class ConnectionManager(AbstractConnectionManager):
                 Barrier(
                     **{
                         "header": {
-                            "src": self.config["meta"]["ip_address"],
+                            "src": self.ip_address,
                             "dst": neighbor,
                         },
                         "connection_id": connection_id,
@@ -258,7 +263,7 @@ class ConnectionManager(AbstractConnectionManager):
                 "barrier",
             )
             for neighbor in neighbors
-            if self.config["meta"]["ip_address"] > neighbor
+            if self.ip_address > neighbor
         ]
         results = await asyncio.gather(*tasks)
         logger.debug(
@@ -278,7 +283,7 @@ class ConnectionManager(AbstractConnectionManager):
         barrier = Barrier(
             **{
                 "header": {
-                    "src": self.config["meta"]["ip_address"],
+                    "src": self.ip_address,
                     "dst": neighbor,
                 },
                 "connection_id": connection_id,
@@ -310,7 +315,7 @@ class ConnectionManager(AbstractConnectionManager):
                     data=message,
                     headers=headers,
                 ) as response:
-                    resp = await response.read()
+                    resp = await response.json()
                     return (resp, response.status)
         except Exception as e:
             raise e
