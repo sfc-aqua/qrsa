@@ -4,6 +4,7 @@ from fastapi.testclient import TestClient
 
 from qnode import server
 from qnode.real_time_controller.real_time_controller import RealtimeController
+from qnode.containers import Container
 
 from common.models.connection_setup_request import ConnectionSetupRequest
 from common.models.app_performance_requirement import ApplicationPerformanceRequirement
@@ -65,9 +66,7 @@ def base_connection_setup_request(
     base_hosts,
     base_performance_indicators,
 ) -> ConnectionSetupRequest:
-    def _gen_connection_setup_request(
-        size: int, position: int = 0, is_responder: bool = False
-    ):
+    def _gen_connection_setup_request(size: int, position: int = 0):
         """
         Generate a connection setup request
         size: The number of hosts in the network
@@ -80,7 +79,7 @@ def base_connection_setup_request(
 
         # The first record of host should correspond to the source
         # and the last record should correspond to the destination
-        header = Header(src=host_list[0], dst=base_hosts(size)[-1])
+        header = Header(src=base_hosts(size)[0], dst=base_hosts(size)[-1])
 
         csr = ConnectionSetupRequest(
             header=header,
@@ -105,6 +104,20 @@ def base_rulesets(mocker: Any, base_hosts: Any) -> List[RuleSet]:
 
 
 @pytest.fixture
+def base_container():
+    def _create_container(
+        host_name: str = "test node", ip_address: str = "192.168.0.2"
+    ):
+        container = Container()
+        container.config.from_dict(
+            {"meta": {"hostname": host_name, "ip_address": ip_address}}
+        )
+        return container
+
+    return _create_container
+
+
+@pytest.fixture
 def mock_rtc(mocker: Any):
     """
     Mock RealtimeController that patches rtc functions and return dummy rtc object.
@@ -123,7 +136,7 @@ def mock_rtc(mocker: Any):
 
 
 @pytest.fixture
-def mock_hm(mocker: Any, base_performance_indicators: Any):
+def mock_hm(mocker: Any, base_performance_indicators: Any) -> None:
     """
     Mock HardwareMonitor that patches hm functions.
     """
@@ -134,7 +147,7 @@ def mock_hm(mocker: Any, base_performance_indicators: Any):
 
 
 @pytest.fixture
-def mock_cm(mocker: Any):
+def mock_cm(mocker: Any) -> None:
     """
     Mock ConnectionManager that patches cm functions.
     """
@@ -169,15 +182,42 @@ def mock_cm(mocker: Any):
 
 
 @pytest.fixture
-def mock_rd(mocker: Any):
+def mock_rd(mocker: Any) -> None:
     """
     Mock RoutingDaemon that patches rd functions.
     """
     mocker.patch(
         "qnode.routing_daemon.routing_daemon.RoutingDaemon.get_next_hop",
-        return_value="192.168.0.3"
+        return_value="192.168.0.3",
     )
     mocker.patch(
         "qnode.routing_daemon.routing_daemon.RoutingDaemon.get_neighbor_nodes",
-        return_value=["192.168.0.5", "192.168.0.6"]
+        return_value=["192.168.0.5", "192.168.0.6"],
     )
+
+
+@pytest.fixture
+def mock_re(mocker: Any) -> None:
+    """
+    Mock RuleEngine that patches re functions.
+    """
+    mocker.patch(
+        "qnode.rule_engine.rule_engine.RuleEngine.accept_ruleset",
+        return_value=("connection_id", RuleSet(ruleset_id="ruleset_id", stages=[])),
+    )
+    mocker.patch(
+        "qnode.rule_engine.rule_engine.RuleEngine.get_pptsns_with_buffer",
+        return_value=10,
+    )
+    mocker.patch(
+        "qnode.rule_engine.rule_engine.RuleEngine.get_switching_pptsns",
+        return_value={"192.168.0.2": 10},
+    )
+
+
+@pytest.fixture
+def mock_qrsa(mock_cm: Any, mock_hm: Any, mock_rd: Any, mock_re: Any) -> None:
+    """
+    integrate qrsa mocks
+    """
+    pass
