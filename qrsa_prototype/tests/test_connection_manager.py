@@ -1,6 +1,8 @@
 import pytest
 from typing import Any
+
 from qnode.connection_manager.connection_manager import ConnectionManager
+from common.models.link_allocation_update import LinkAllocationUpdate
 
 
 @pytest.fixture
@@ -14,20 +16,21 @@ def init_connection_manager() -> Any:
     return _inject_config
 
 
-class TestConnectionManager:
-    @pytest.fixture
-    def shared_mock(self, mocker: Any) -> None:
-        mocker.patch(
-            "qnode.connection_manager.connection_manager.ConnectionManager.send_message",  # noqa
-            return_value=(None, 200),
-        )
+@pytest.fixture
+def shared_mock(mocker: Any) -> None:
+    mocker.patch(
+        "qnode.connection_manager.connection_manager.ConnectionManager.send_message",  # noqa
+        return_value=(None, 200),
+    )
 
+
+@pytest.mark.usefixtures("shared_mock")
+class TestConnectionManager:
     @pytest.mark.asyncio
     async def test_send_connection_setup_request(
         self,
         init_connection_manager: Any,
         mocker: Any,
-        shared_mock: Any,
         base_app_performance_requirement: Any,
         base_performance_indicators: Any,
     ) -> None:
@@ -60,7 +63,6 @@ class TestConnectionManager:
         self,
         init_connection_manager: Any,
         mocker: Any,
-        shared_mock: Any,
         base_rulesets: Any,
         base_connection_setup_request: Any,
     ) -> None:
@@ -98,7 +100,6 @@ class TestConnectionManager:
         self,
         init_connection_manager: Any,
         mocker: Any,
-        shared_mock: Any,
         base_connection_setup_request: Any,
         base_performance_indicators: Any,
     ) -> None:
@@ -121,3 +122,89 @@ class TestConnectionManager:
         assert cm.pending_connections.get("application_id").prev_hop == "192.168.0.2"
         assert cm.pending_connections.get("application_id").source == "192.168.0.2"
         assert cm.pending_connections.get("application_id").destination == "192.168.0.4"
+
+    def test_update_application_id(
+        self,
+        init_connection_manager: Any,
+    ) -> None:
+        """
+        Test application id is properly updated
+        """
+        cm = init_connection_manager()
+        cm.pending_connections["application_id"] = "dummy"
+        cm.update_pending_connection_to_running_connection(
+            "connection_id", "application_id"
+        )
+
+        assert len(cm.pending_connections) == 0
+        assert len(cm.running_connections) == 1
+        assert cm.running_connections["connection_id"] == "dummy"
+
+    @pytest.mark.asyncio
+    async def test_send_lau_update(
+        self, init_connection_manager: Any, caplog: Any
+    ) -> None:
+        # Situation
+        # Two nodes connected and this node has larger ip address
+        cm = init_connection_manager(
+            {"meta": {"hostname": "test(1)", "ip_address": "192.168.0.4"}}
+        )
+        neighbors = [
+            "192.168.0.2",  # will be sent
+            "192.168.0.3",  # will be sent
+            "192.168.0.5",  # won't be sent
+        ]
+        proposed_la = LinkAllocationUpdate(
+            **{"connection_id": "connection_id", "proposed_link_allocation": {}}
+        )
+        with caplog.at_level("DEBUG"):
+            results = await cm.send_lau_update(neighbors, proposed_la)
+            assert len(results) == 2
+            assert results[0] == (None, 200)
+            assert results[1] == (None, 200)
+
+        assert "192.168.0.2" in caplog.text
+        assert "192.168.0.3" in caplog.text
+        assert "192.168.0.5" not in caplog.text
+
+    @pytest.mark.asyncio
+    async def test_send_barrier(
+        self, init_connection_manager: Any, caplog: Any
+    ) -> None:
+        # Situation
+        # Two nodes connected and this node has larger ip address
+        cm = init_connection_manager(
+            {"meta": {"hostname": "test(1)", "ip_address": "192.168.0.4"}}
+        )
+        neighbors = [
+            "192.168.0.2",  # will be sent
+            "192.168.0.3",  # will be sent
+            "192.168.0.5",  # won't be sent
+        ]
+        target_pptsns = {host: 10 + i for i, host in enumerate(neighbors)}
+        with caplog.at_level("DEBUG"):
+            results = await cm.send_barrier("connection_id", neighbors, target_pptsns)
+            assert len(results) == 2
+            assert results[0] == (None, 200)
+            assert results[1] == (None, 200)
+
+        assert "192.168.0.2" in caplog.text
+        assert "192.168.0.3" in caplog.text
+        assert "192.168.0.5" not in caplog.text
+
+    @pytest.mark.asyncio
+    async def test_send_barrier_response(
+        self,
+        init_connection_manager: Any,
+    ) -> None:
+        # Situation
+        # Two nodes connected and this node has smaller ip address
+        # received barrier from neighbor node and make response
+        cm = init_connection_manager(
+            {"meta": {"hostname": "test(1)", "ip_address": "192.168.0.2"}}
+        )
+        connection_id = "connection_id"
+        neighbor = "192.168.0.3"
+        agreed_pptsn = 11
+        response = await cm.send_barrier_response(connection_id, neighbor, agreed_pptsn)
+        assert response == (None, 200)

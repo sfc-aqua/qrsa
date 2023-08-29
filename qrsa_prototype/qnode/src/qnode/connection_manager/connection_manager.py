@@ -217,9 +217,9 @@ class ConnectionManager(AbstractConnectionManager):
                 f"Application id {application_id} is not in pending connections"
             )
         else:
-            self.running_connections[connection_id] = self.pending_connections[
+            self.running_connections[connection_id] = self.pending_connections.pop(
                 application_id
-            ]
+            )
 
     async def send_lau_update(
         self, neighbors: List[IpAddressType], proposed_la: LinkAllocationUpdate
@@ -268,7 +268,7 @@ class ConnectionManager(AbstractConnectionManager):
         ]
         results = await asyncio.gather(*tasks)
         logger.debug(
-            f"Sent barrier message to {[nb for nb in neighbors if self.config['meta']['ip_address'] > nb]} from {self.config['meta']['hostname']}"  # noqa
+            f"Sent barrier message to {[nb for nb in neighbors if self.ip_address > nb]} from {self.ip_address}"  # noqa
         )
         return results
 
@@ -277,7 +277,7 @@ class ConnectionManager(AbstractConnectionManager):
         connection_id: str,
         neighbor: IpAddressType,
         agreed_pptsn: int,
-    ):
+    ) -> (str, int):
         """
         A node who received barrier message will send barrier response with agreed pptsn
         """
@@ -291,10 +291,10 @@ class ConnectionManager(AbstractConnectionManager):
                 "target_pptsn": agreed_pptsn,
             }
         )
-        response, _ = await self.send_message(
+        response, status_code = await self.send_message(
             barrier.model_dump_json(), neighbor, "barrier_response"
         )
-        return response
+        return (response, status_code)
 
     async def send_message(
         self,
@@ -302,7 +302,7 @@ class ConnectionManager(AbstractConnectionManager):
         destination: IpAddressType,
         endpoint: str,
         headers: Dict[str, str] = {"Content-Type": "application/json"},
-        port: int = 8080,  # tempral
+        port: int = 8080,
     ) -> Tuple[str, int]:
         """
         Send a message to a destination
