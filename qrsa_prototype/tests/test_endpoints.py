@@ -85,17 +85,22 @@ class TestEndpoints:
         """
         Handle connection setup response
         """
-        initiator = "192.168.0.2"
-        responder = "192.168.0.4"
-        _ = base_container_config("initiator", initiator)
-        # response from 192.168.0.4
-        csr = base_connection_setup_response(responder, initiator)
+        _ = base_container_config("initiator", "192.168.0.2")
 
         with test_client as client:
             response = client.post(
                 "/connection_setup_response",
-                data=csr.model_dump_json(),
+                data=base_connection_setup_response.model_dump_json(),
                 headers={"Content-Type": "application/json"},
             )
             assert response.status_code == 200
             assert response.json() == {"message": "Received connection setup response"}
+
+    def test_handle_link_allocation_update(
+        self,
+        test_client: Any,
+        mock_qrsa: Any,
+        base_container_config: Any,
+        base_link_allocation_update: Any,
+    ) -> None:
+        pass

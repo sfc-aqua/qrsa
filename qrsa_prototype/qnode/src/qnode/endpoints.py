@@ -192,7 +192,7 @@ async def handle_connection_setup_reject(reject: ConnectionSetupReject):
 
 @router.post("/link_allocation_update")
 @inject
-async def handle_lau_update(
+async def handle_link_allocation_update(
     proposed_lau: LinkAllocationUpdate,
     rule_engine: RuleEngine = Depends(Provide[Container.rule_engine]),
 ):

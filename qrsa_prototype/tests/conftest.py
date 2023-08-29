@@ -96,22 +96,22 @@ def base_connection_setup_request(
 
 @pytest.fixture
 def base_connection_setup_response(
-    base_header, base_app_performance_requirement, base_rulesets
+    base_header,
 ) -> ConnectionSetupResponse:
-    def _gen_connection_setup_response(
-        src: str = "192.168.0.2", dst: str = "192.168.0.4"
-    ):
-        """
-        Generate a connection setup response
-        """
-        return ConnectionSetupResponse(
-            header=Header(src=src, dst=dst),
-            application_id="application_id",
-            connection_id="connection_id",
-            ruleset=RuleSet(ruleset_id="ruleset_id", stages=[]),
-        )
+    """
+    Generate a connection setup response
+    """
+    return ConnectionSetupResponse(
+        header=base_header,
+        application_id="application_id",
+        connection_id="connection_id",
+        ruleset=RuleSet(ruleset_id="ruleset_id", stages=[]),
+    )
 
-    return _gen_connection_setup_response
+
+@pytest.fixture
+def base_link_allocation_update():
+    pass
 
 
 @pytest.fixture
