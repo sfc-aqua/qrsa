@@ -141,7 +141,7 @@ class TestConnectionManager:
         assert cm.running_connections["connection_id"] == "dummy"
 
     @pytest.mark.asyncio
-    async def test_send_lau_update(
+    async def test_send_link_allocation_update(
         self, init_connection_manager: Any, caplog: Any
     ) -> None:
         # Situation
@@ -158,7 +158,7 @@ class TestConnectionManager:
             **{"connection_id": "connection_id", "proposed_link_allocation": {}}
         )
         with caplog.at_level("DEBUG"):
-            results = await cm.send_lau_update(neighbors, proposed_la)
+            results = await cm.send_link_allocation_update(neighbors, proposed_la)
             assert len(results) == 2
             assert results[0] == (None, 200)
             assert results[1] == (None, 200)

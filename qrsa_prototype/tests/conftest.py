@@ -120,3 +120,64 @@ def mock_rtc(mocker: Any):
     )
 
     return RealtimeController()
+
+
+@pytest.fixture
+def mock_hm(mocker: Any, base_performance_indicators: Any):
+    """
+    Mock HardwareMonitor that patches hm functions.
+    """
+    mocker.patch(
+        "qnode.hardware_monitor.hardware_monitor.HardwareMonitor.get_performance_indicator",  # noqa
+        return_value=base_performance_indicators(1)[0],
+    )
+
+
+@pytest.fixture
+def mock_cm(mocker: Any):
+    """
+    Mock ConnectionManager that patches cm functions.
+    """
+    mocker.patch(
+        "qnode.connection_manager.connection_manager.ConnectionManager.send_connection_setup_request",  # noqa
+        return_value=(None, 200),
+    )
+    mocker.patch(
+        "qnode.connection_manager.connection_manager.ConnectionManager.respond_to_connection_setup_request",  # noqa
+        return_value=(None, 200),
+    )
+    mocker.patch(
+        "qnode.connection_manager.connection_manager.ConnectionManager.forward_connection_setup_request",  # noqa
+        return_value=(None, 200),
+    )
+    mocker.patch(
+        "qnode.connection_manager.connection_manager.ConnectionManager.update_pending_connection_to_running_connection",  # noqa
+    )
+    mocker.patch(
+        "qnode.connection_manager.connection_manager.ConnectionManager.send_link_allocation_update",  # noqa
+        return_value=(None, 200),
+    )
+    mocker.patch(
+        "qnode.connection_manager.connection_manager.ConnectionManager.send_barrier",  # noqa
+    )
+    mocker.patch(
+        "qnode.connection_manager.connection_manager.ConnectionManager.send_barrier_response",  # noqa
+    )
+    mocker.patch(
+        "qnode.connection_manager.connection_manager.ConnectionManager.send_message",  # noqa
+    )
+
+
+@pytest.fixture
+def mock_rd(mocker: Any):
+    """
+    Mock RoutingDaemon that patches rd functions.
+    """
+    mocker.patch(
+        "qnode.routing_daemon.routing_daemon.RoutingDaemon.get_next_hop",
+        return_value="192.168.0.3"
+    )
+    mocker.patch(
+        "qnode.routing_daemon.routing_daemon.RoutingDaemon.get_neighbor_nodes",
+        return_value=["192.168.0.5", "192.168.0.6"]
+    )

@@ -108,7 +108,7 @@ async def handle_connection_setup_request(
         neighbors = routing_daemon.get_neighbor_nodes()
 
         # Send LAU update to the next hop
-        await connection_manager.send_lau_update(neighbors, proposed_lau)
+        await connection_manager.send_link_allocation_update(neighbors, proposed_lau)
 
         # Get target pptsn with buffer from rule engine
         target_pptsns = rule_engine.get_pptsns_with_buffer(neighbors, 10)
@@ -164,7 +164,7 @@ async def handle_connection_setup_response(
     # Get all the nighbor nodes to send laus
     neighbors = routing_daemon.get_neighbor_nodes()
     # Send LAU update to the next hop
-    _ = await connection_manager.send_lau_update(neighbors, proposed_la)
+    _ = await connection_manager.send_link_allocation_update(neighbors, proposed_la)
 
     # Get target pptsn with buffer from rule engine
     target_pptsns = rule_engine.get_pptsns_with_buffer(neighbors, 10)

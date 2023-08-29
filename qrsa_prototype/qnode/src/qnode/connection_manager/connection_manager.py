@@ -44,7 +44,7 @@ class ConnectionManager(AbstractConnectionManager):
         next_hop: IpAddressType,
         application_performance_requirement: ApplicationPerformanceRequirement,
         performance_indicator: PerformanceIndicator,
-    ):
+    ) -> Tuple[str, int]:
         """
         Send connection setup request to the next hop
         This function can only be called in the initiator node
@@ -97,7 +97,7 @@ class ConnectionManager(AbstractConnectionManager):
         self,
         given_request: ConnectionSetupRequest,
         performance_indicator: PerformanceIndicator,
-    ) -> (str, RuleSet):
+    ) -> Tuple[str, RuleSet]:
         """
         Respond to a connection setup request.
         This function creates and distributes RuleSets to intermediate nodes.
@@ -169,7 +169,7 @@ class ConnectionManager(AbstractConnectionManager):
         given_request: ConnectionSetupRequest,
         performance_indicator: PerformanceIndicator,
         next_hop: IpAddressType,
-    ):
+    ) -> Tuple[str, int]:
         """
         Forward a received connection setup to next hop
         """
@@ -207,11 +207,11 @@ class ConnectionManager(AbstractConnectionManager):
         # When the connection setup response is received,
         # this connection meta will be moved to running connections
         self.pending_connections[given_request.application_id] = conn_info
-        return response
+        return (response, status_code)
 
     def update_pending_connection_to_running_connection(
         self, connection_id: str, application_id: str
-    ):
+    ) -> None:
         if self.pending_connections.get(application_id) is None:
             raise Exception(
                 f"Application id {application_id} is not in pending connections"
@@ -221,9 +221,9 @@ class ConnectionManager(AbstractConnectionManager):
                 application_id
             )
 
-    async def send_lau_update(
+    async def send_link_allocation_update(
         self, neighbors: List[IpAddressType], proposed_la: LinkAllocationUpdate
-    ):
+    ) -> List[Any]:
         """
         Send LAU update to the neighbor nodes
         """
@@ -277,7 +277,7 @@ class ConnectionManager(AbstractConnectionManager):
         connection_id: str,
         neighbor: IpAddressType,
         agreed_pptsn: int,
-    ) -> (str, int):
+    ) -> Tuple[str, int]:
         """
         A node who received barrier message will send barrier response with agreed pptsn
         """
