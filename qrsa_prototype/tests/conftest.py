@@ -7,6 +7,7 @@ from qnode.real_time_controller.real_time_controller import RealtimeController
 from qnode.containers import Container
 
 from common.models.connection_setup_request import ConnectionSetupRequest
+from common.models.connection_setup_response import ConnectionSetupResponse
 from common.models.app_performance_requirement import ApplicationPerformanceRequirement
 from common.models.header import Header
 from common.models.performance_indicator import PerformanceIndicator
@@ -94,6 +95,26 @@ def base_connection_setup_request(
 
 
 @pytest.fixture
+def base_connection_setup_response(
+    base_header, base_app_performance_requirement, base_rulesets
+) -> ConnectionSetupResponse:
+    def _gen_connection_setup_response(
+        src: str = "192.168.0.2", dst: str = "192.168.0.4"
+    ):
+        """
+        Generate a connection setup response
+        """
+        return ConnectionSetupResponse(
+            header=Header(src=src, dst=dst),
+            application_id="application_id",
+            connection_id="connection_id",
+            ruleset=RuleSet(ruleset_id="ruleset_id", stages=[]),
+        )
+
+    return _gen_connection_setup_response
+
+
+@pytest.fixture
 def base_rulesets(mocker: Any, base_hosts: Any) -> List[RuleSet]:
     def _gen_rulesets(size: int, ruleset_id: str = "ruleset_id"):
         return {
@@ -104,7 +125,7 @@ def base_rulesets(mocker: Any, base_hosts: Any) -> List[RuleSet]:
 
 
 @pytest.fixture
-def base_container():
+def base_container_config():
     def _create_container(
         host_name: str = "test node", ip_address: str = "192.168.0.2"
     ):

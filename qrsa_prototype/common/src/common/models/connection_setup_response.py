@@ -1,5 +1,7 @@
 from pydantic import BaseModel, Field
+
 from common.models.ruleset import RuleSet
+from common.models.header import Header
 
 
 class ConnectionSetupResponse(BaseModel):
@@ -9,6 +11,7 @@ class ConnectionSetupResponse(BaseModel):
     so one response message is created for one intermediate repeater.
     """
 
+    header: Header = Field(..., description="Header")
     application_id: str = Field(
         ..., description="Application Id corresponding to the connection id"
     )

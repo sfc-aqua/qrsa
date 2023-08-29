@@ -3,8 +3,6 @@ import pytest
 
 from common.models.application_bootstrap import ApplicationBootstrap
 
-from qnode.containers import Container
-
 
 @pytest.mark.usefixtures("mock_rd", "mock_cm", "mock_hm")
 class TestEndpoints:
@@ -34,9 +32,8 @@ class TestEndpoints:
     def test_handle_connection_setup_request_responder(
         self,
         test_client: Any,
-        mocker: Any,
         mock_qrsa: Any,
-        base_container: Any,
+        base_container_config: Any,
         base_connection_setup_request: Any,
     ) -> None:
         """
@@ -44,7 +41,7 @@ class TestEndpoints:
         """
         # Three nodes
         # 192.168.0.2 <--> 192.168.0.3 <--> 192.168.0.4
-        base_container("responder node", "192.168.0.4")
+        _ = base_container_config("responder node", "192.168.0.4")
         csr = base_connection_setup_request(3, 2)  # three nodes and responder
 
         with test_client as client:
@@ -55,3 +52,50 @@ class TestEndpoints:
             )
             assert response.status_code == 200
             assert response.json() == {"message": "Received connection setup request"}
+
+    def test_handle_connection_setup_request_intermediate_repeater(
+        self,
+        test_client: Any,
+        mock_qrsa: Any,
+        base_container_config: Any,
+        base_connection_setup_request: Any,
+    ) -> None:
+        """
+        Handle connection setup request as an intermediate repeater
+        """
+        _ = base_container_config("repeater", "192.168.0.3")
+        csr = base_connection_setup_request(3, 1)  # three nodes and repeater
+
+        with test_client as client:
+            response = client.post(
+                "/connection_setup_request",
+                data=csr.model_dump_json(),
+                headers={"Content-Type": "application/json"},
+            )
+            assert response.status_code == 200
+            assert response.json() == {"message": "Received connection setup request"}
+
+    def test_handle_connection_setup_response(
+        self,
+        test_client: Any,
+        mock_qrsa: Any,
+        base_container_config: Any,
+        base_connection_setup_response: Any,
+    ) -> None:
+        """
+        Handle connection setup response
+        """
+        initiator = "192.168.0.2"
+        responder = "192.168.0.4"
+        _ = base_container_config("initiator", initiator)
+        # response from 192.168.0.4
+        csr = base_connection_setup_response(responder, initiator)
+
+        with test_client as client:
+            response = client.post(
+                "/connection_setup_response",
+                data=csr.model_dump_json(),
+                headers={"Content-Type": "application/json"},
+            )
+            assert response.status_code == 200
+            assert response.json() == {"message": "Received connection setup response"}

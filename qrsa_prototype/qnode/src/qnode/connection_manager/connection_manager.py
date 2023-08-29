@@ -149,6 +149,10 @@ class ConnectionManager(AbstractConnectionManager):
                 # Take a ruleset and send it to destination
                 connection_setup_response_json = ConnectionSetupResponse(
                     **{
+                        "header": {
+                            "src": self.ip_address,
+                            "dst": host,
+                        },
                         "application_id": given_request.application_id,
                         "connection_id": connection_id,
                         "ruleset": rulesets[host],
