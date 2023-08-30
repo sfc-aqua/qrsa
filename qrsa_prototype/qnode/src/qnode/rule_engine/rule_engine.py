@@ -64,17 +64,6 @@ class RuleEngine:
             neighbor: self.rtc.get_pptsn(neighbor) + buffer for neighbor in neighbors
         }
 
-    def accept_lau(
-        self, lau: LinkAllocationUpdate
-    ) -> Tuple[bool, Optional[LinkAllocationUpdate]]:
-        """
-        Check the currently running rulesets and
-        decide whether to accept the LAU or not.
-        """
-        # If false, send new proposed LAU back
-        # For now, rule engine always accepts lau
-        return (True, None)
-
     def accept_ruleset(self, connection_id: str, ruleset: RuleSet):
         # TODO: implement policy and pptsn relationship
 
@@ -95,6 +84,17 @@ class RuleEngine:
             }
         )
         return new_la
+
+    def accept_lau(
+        self, lau: LinkAllocationUpdate
+    ) -> Tuple[bool, Optional[LinkAllocationUpdate]]:
+        """
+        Check the currently running rulesets and
+        decide whether to accept the LAU or not.
+        """
+        # If false, send new proposed LAU back
+        # For now, rule engine always accepts lau
+        return (True, None)
 
     def update_switching_pptsn(
         self, connection_id: str, neighbor: IpAddressType, target_pptsn: int

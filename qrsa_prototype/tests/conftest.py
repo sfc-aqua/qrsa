@@ -157,7 +157,7 @@ def base_container_config():
 
 
 @pytest.fixture
-def mock_rtc(mocker: Any):
+def mock_rtc(mocker: Any, base_container_config: Any):
     """
     Mock RealtimeController that patches rtc functions and return dummy rtc object.
     """
@@ -171,7 +171,7 @@ def mock_rtc(mocker: Any):
         "qnode.real_time_controller.real_time_controller.RealtimeController.fetch_link_entanglement"  # noqa
     )
 
-    return RealtimeController()
+    return RealtimeController(base_container_config)
 
 
 @pytest.fixture
