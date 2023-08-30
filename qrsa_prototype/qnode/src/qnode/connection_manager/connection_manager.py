@@ -229,7 +229,14 @@ class ConnectionManager(AbstractConnectionManager):
         self, neighbors: List[IpAddressType], proposed_la: LinkAllocationUpdate
     ) -> List[Any]:
         """
-        Send LAU update to the neighbor nodes
+        Send Link Allocation Update to the neighbor nodes
+
+        Do we need to send all the neighbors or
+        only the neighbors in the same connection?
+
+        Since switching la would affect other connections,
+        we might need to tell lau to all the neighbors even in other connections.
+
         """
         # If this node has larger ip address
         # than the neighbor's ip address,send lau update

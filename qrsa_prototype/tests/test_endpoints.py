@@ -103,4 +103,18 @@ class TestEndpoints:
         base_container_config: Any,
         base_link_allocation_update: Any,
     ) -> None:
-        pass
+        _ = base_container_config("repeater", "192.168.0.3")
+
+        with test_client as client:
+            response = client.post(
+                "/link_allocation_update",
+                data=base_link_allocation_update.model_dump_json(),
+                headers={"Content-Type": "application/json"},
+            )
+            assert response.status_code == 200
+            assert response.json() == {"message": "Link Allocation Update Accepted"}
+
+    def test_handle_barrier(
+        self, test_client: Any, mock_qrsa: Any, base_container_config: Any
+    ) -> None:
+        _ = base_container_config("repeater", "192.168.0.3")

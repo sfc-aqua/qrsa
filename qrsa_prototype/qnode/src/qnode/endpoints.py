@@ -205,7 +205,10 @@ async def handle_link_allocation_update(
     (accepted, _new_proposed_lau) = rule_engine.accept_lau(proposed_lau)
     if accepted:
         # Send accept response
-        return {"message": "LAU Accepted"}
+        return JSONResponse(
+            content={"message": "Link Allocation Update Accepted"},
+            headers={"Content-Type": "application/json"},
+        )
     else:
         raise NotImplementedError("Unacceptable LAU is not yet implemented")
 

@@ -6,11 +6,13 @@ from qnode import server
 from qnode.real_time_controller.real_time_controller import RealtimeController
 from qnode.containers import Container
 
+from common.models.app_performance_requirement import ApplicationPerformanceRequirement
 from common.models.connection_setup_request import ConnectionSetupRequest
 from common.models.connection_setup_response import ConnectionSetupResponse
-from common.models.app_performance_requirement import ApplicationPerformanceRequirement
-from common.models.header import Header
+from common.models.link_allocation_update import LinkAllocationUpdate
+from common.models.link_allocation_policy import LinkAllocationPolicy
 from common.models.performance_indicator import PerformanceIndicator
+from common.models.header import Header
 from common.models.ruleset import RuleSet
 
 
@@ -111,7 +113,13 @@ def base_connection_setup_response(
 
 @pytest.fixture
 def base_link_allocation_update():
-    pass
+    """
+    Generate a link allocation update
+    """
+    return LinkAllocationUpdate(
+        connection_id="connection_id",
+        proposed_link_allocation=LinkAllocationPolicy(),
+    )
 
 
 @pytest.fixture
