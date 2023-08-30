@@ -115,6 +115,37 @@ class TestEndpoints:
             assert response.json() == {"message": "Link Allocation Update Accepted"}
 
     def test_handle_barrier(
-        self, test_client: Any, mock_qrsa: Any, base_container_config: Any
+        self,
+        test_client: Any,
+        mock_qrsa: Any,
+        base_container_config: Any,
+        base_barrier: Any,
     ) -> None:
         _ = base_container_config("repeater", "192.168.0.3")
+
+        with test_client as client:
+            response = client.post(
+                "/barrier",
+                data=base_barrier.model_dump_json(),
+                headers={"Content-Type": "application/json"},
+            )
+            assert response.status_code == 200
+            assert response.json() == {"message": "Received barrier"}
+
+    def test_handle_barrier_response(
+            self,
+            test_client: Any,
+            mock_qrsa: Any,
+            base_container_config: Any,
+            base_barrier: Any,
+    ) -> None:
+        _ = base_container_config("repeater", "192.168.0.3")
+
+        with test_client as client:
+            response = client.post(
+                "/barrier_response",
+                data=base_barrier.model_dump_json(),
+                headers={"Content-Type": "application/json"},
+            )
+            assert response.status_code == 200
+            assert response.json() == {"message": "Received barrier response"}

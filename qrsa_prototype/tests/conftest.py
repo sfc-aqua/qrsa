@@ -12,6 +12,7 @@ from common.models.connection_setup_response import ConnectionSetupResponse
 from common.models.link_allocation_update import LinkAllocationUpdate
 from common.models.link_allocation_policy import LinkAllocationPolicy
 from common.models.performance_indicator import PerformanceIndicator
+from common.models.barrier import Barrier
 from common.models.header import Header
 from common.models.ruleset import RuleSet
 
@@ -133,6 +134,15 @@ def base_rulesets(mocker: Any, base_hosts: Any) -> List[RuleSet]:
 
 
 @pytest.fixture
+def base_barrier(base_header: Any) -> Barrier:
+    return Barrier(
+        header=base_header,
+        connection_id="connection_id",
+        target_pptsn=10,
+    )
+
+
+@pytest.fixture
 def base_container_config():
     def _create_container(
         host_name: str = "test node", ip_address: str = "192.168.0.2"
@@ -236,7 +246,7 @@ def mock_re(mocker: Any) -> None:
     )
     mocker.patch(
         "qnode.rule_engine.rule_engine.RuleEngine.get_pptsns_with_buffer",
-        return_value=10,
+        return_value={"192.168.0.2": 10},
     )
     mocker.patch(
         "qnode.rule_engine.rule_engine.RuleEngine.get_switching_pptsns",
