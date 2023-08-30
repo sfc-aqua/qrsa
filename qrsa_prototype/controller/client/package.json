@@ -9,7 +9,7 @@
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
 		"lint": "prettier --plugin-search-dir . --check . && eslint .",
 		"format": "prettier --plugin-search-dir . --write .",
-		"generate-client": "openapi --input http://localhost:9000/api/openapi.json --output ./src/client --client axios"
+		"generate-client": "openapi --input http://localhost:9000/api/openapi.json --output ./src/client --client axios --request ./src/lib/request.ts"
 	},
 	"devDependencies": {
 		"@fontsource/fira-mono": "^4.5.10",

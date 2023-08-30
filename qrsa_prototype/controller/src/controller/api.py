@@ -100,8 +100,7 @@ async def exec_run_container(id: str, cmd: str, client: DockerClientDep):
 @api.post("/containers/{id}/exec_run_stream", response_class=StreamingResponse)
 async def exec_run_container_stream(id: str, cmd: str, client: DockerClientDep):
     (_, result) = client.containers.get(id).exec_run(cmd, stream=True, stdout=True, stderr=True)
-    print(result.next())
-    return StreamingResponse(result)
+    return StreamingResponse(content=result, media_type="text/plain")
 
 
 @api.post("/links/{id}/delay")

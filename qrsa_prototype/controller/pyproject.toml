@@ -24,5 +24,6 @@ controller = "src"
 managed = true
 dev-dependencies = []
 
+
 [tool.hatch.metadata]
 allow-direct-references = true
