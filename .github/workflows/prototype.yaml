@@ -43,6 +43,7 @@ jobs:
         working-directory: qrsa_prototype
         run: rye sync
       - name: Run tests
+        working-directory: qrsa_prototype
         run: rye run pytest --cov --cov-report=Xml
       - name: Upload coverage
         uses: codecov/codecov-action@v3
