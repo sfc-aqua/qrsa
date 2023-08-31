@@ -12,10 +12,14 @@ class TestEndpoints:
             assert response.status_code == 200
             assert response.json() == {"message": "Alive"}
 
-    @pytest.mark.asyncio
-    async def test_send_connection_setup_request(
-        self, test_client: Any, mocker: Any, base_app_performance_requirement: Any
+    def test_send_connection_setup_request(
+        self,
+        test_client: Any,
+        mocker: Any,
+        base_container_config: Any,
+        base_app_performance_requirement: Any,
     ) -> None:
+        _ = base_container_config("initiator", "192.168.0.2")
         app_bootstrap = ApplicationBootstrap(
             destination="192.168.0.4",
             application_performance_requirement=base_app_performance_requirement,

@@ -13,4 +13,3 @@ def init_rule_engine(mock_rtc: Any) -> Any:
         return RuleEngine(config, mock_rtc)
 
     return _inject_config
-
