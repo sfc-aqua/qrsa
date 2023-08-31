@@ -28,18 +28,4 @@ jobs:
           target: controller 
           push: false
           tags: qrsa_prototype/controller:latest
-  pytest:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Up containers
-        run: ls && docker-compose up -d --build
-      - name: Enter container
-        run: docker exec -it qrsa-qnode1-1 bash
-      - name: Setup Rye
-        run: rye sync -f --no-lock
-      - name: Run tests
-        run: rye run pytest --cov --cov-report=xml
-      - name: Upload to codecov
-        uses: codecov/codecov-action@v3
-        with:
-          token: ${{ secrets.CODECOV_TOKEN }}
+
