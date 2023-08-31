@@ -1,7 +1,7 @@
 from pydantic import BaseModel, Field
 
 from common.type_utils import IpAddressType
-from common.models.app_performance_requirement import ApplicationPerformanceRequirement
+from common.models import ApplicationPerformanceRequirement
 
 
 class ApplicationBootstrap(BaseModel):

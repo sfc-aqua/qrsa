@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field
-from common.models.link_allocation_policy import LinkAllocationPolicy
+from common.models import LinkAllocationPolicy
 
 
 class LinkAllocationUpdate(BaseModel):

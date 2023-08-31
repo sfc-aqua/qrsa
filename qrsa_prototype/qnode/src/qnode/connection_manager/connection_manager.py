@@ -4,14 +4,17 @@ import asyncio
 from typing import Tuple, List, Dict, Any
 from dependency_injector.providers import Configuration
 
-from common.models.ruleset import RuleSet
-from common.models.connection_setup_request import ConnectionSetupRequest
-from common.models.connection_setup_response import ConnectionSetupResponse
-from common.models.performance_indicator import PerformanceIndicator
-from common.models.link_allocation_update import LinkAllocationUpdate
-from common.models.connection import ConnectionMeta
-from common.models.barrier import Barrier
-from common.models.app_performance_requirement import ApplicationPerformanceRequirement
+
+from common.models import (
+    ApplicationPerformanceRequirement,
+    ConnectionSetupRequest,
+    ConnectionSetupResponse,
+    PerformanceIndicator,
+    LinkAllocationUpdate,
+    ConnectionMeta,
+    Barrier,
+    RuleSet,
+)
 from common.type_utils import IpAddressType
 from common.log.logger import logger
 

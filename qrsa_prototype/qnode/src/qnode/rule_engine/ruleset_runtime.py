@@ -1,6 +1,6 @@
 from enum import Enum
 
-from common.models.ruleset import RuleSet
+from common.models import RuleSet
 
 
 class State(Enum):

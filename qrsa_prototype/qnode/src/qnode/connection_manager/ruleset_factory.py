@@ -1,7 +1,6 @@
 from typing import Dict
 
-from common.models.ruleset import RuleSet
-from common.models.performance_indicator import PerformanceIndicator
+from common.models import RuleSet, PerformanceIndicator
 from common.type_utils import IpAddressType
 
 

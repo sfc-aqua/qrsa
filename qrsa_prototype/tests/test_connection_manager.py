@@ -1,8 +1,8 @@
 import pytest
 from typing import Any
 
-from qnode.connection_manager.connection_manager import ConnectionManager
-from common.models.link_allocation_update import LinkAllocationUpdate
+from qnode.connection_manager import ConnectionManager
+from common.models import LinkAllocationUpdate
 
 
 @pytest.fixture

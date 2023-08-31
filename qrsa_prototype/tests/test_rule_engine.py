@@ -1,7 +1,7 @@
 import pytest
 from typing import Any
 
-from qnode.rule_engine.rule_engine import RuleEngine
+from qnode.rule_engine import RuleEngine
 
 
 @pytest.fixture

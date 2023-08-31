@@ -1,10 +1,8 @@
 import aiohttp
 import asyncio
 import socket
-from common.models.application_bootstrap import ApplicationBootstrap
-from common.models.app_performance_requirement import (
-    ApplicationPerformanceRequirement,
-)
+from common.models import ApplicationBootstrap
+from common.models import ApplicationPerformanceRequirement
 
 
 async def start_connection_setup():

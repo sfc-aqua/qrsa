@@ -1,10 +1,10 @@
 from dependency_injector import containers, providers
 
-from qnode.real_time_controller.real_time_controller import RealtimeController
-from qnode.connection_manager.connection_manager import ConnectionManager
-from qnode.hardware_monitor.hardware_monitor import HardwareMonitor
-from qnode.routing_daemon.routing_daemon import RoutingDaemon
-from qnode.rule_engine.rule_engine import RuleEngine
+from qnode.real_time_controller import RealtimeController
+from qnode.connection_manager import ConnectionManager
+from qnode.hardware_monitor import HardwareMonitor
+from qnode.routing_daemon import RoutingDaemon
+from qnode.rule_engine import RuleEngine
 
 
 class Container(containers.DeclarativeContainer):

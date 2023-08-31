@@ -1,5 +1,5 @@
-from common.models.performance_indicator import PerformanceIndicator
-from qnode.real_time_controller.real_time_controller import RealtimeController
+from common.models import PerformanceIndicator
+from qnode.real_time_controller import RealtimeController
 
 
 class HardwareMonitor:

@@ -4,7 +4,7 @@ from fastapi import FastAPI
 
 from qnode.endpoints import router
 from qnode.containers import Container
-from common.models.configs.config import Config
+from common.models.configs import Config
 
 
 def create_server() -> FastAPI:

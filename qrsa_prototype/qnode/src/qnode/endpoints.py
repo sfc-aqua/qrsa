@@ -3,20 +3,21 @@ from fastapi import APIRouter, Depends
 from fastapi.responses import JSONResponse
 from dependency_injector.wiring import inject, Provide
 
-from common.models.connection_setup_request import ConnectionSetupRequest
-from common.models.connection_setup_response import ConnectionSetupResponse
-from common.models.connection_setup_reject import ConnectionSetupReject
-from common.models.link_allocation_update import LinkAllocationUpdate
-from common.models.application_bootstrap import ApplicationBootstrap
-from common.models.barrier import Barrier
+from common.models import (
+    ConnectionSetupRequest,
+    ConnectionSetupResponse,
+    ConnectionSetupReject,
+    LinkAllocationUpdate,
+    ApplicationBootstrap,
+    Barrier,
+)
 from common.log.logger import logger
 
-
 from qnode.containers import Container
-from qnode.connection_manager.connection_manager import ConnectionManager
-from qnode.hardware_monitor.hardware_monitor import HardwareMonitor
-from qnode.routing_daemon.routing_daemon import RoutingDaemon
-from qnode.rule_engine.rule_engine import RuleEngine
+from qnode.connection_manager import ConnectionManager
+from qnode.hardware_monitor import HardwareMonitor
+from qnode.routing_daemon import RoutingDaemon
+from qnode.rule_engine import RuleEngine
 
 router = APIRouter()
 

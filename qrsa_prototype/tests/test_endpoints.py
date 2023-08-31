@@ -1,7 +1,7 @@
 from typing import Any
 import pytest
 
-from common.models.application_bootstrap import ApplicationBootstrap
+from common.models import ApplicationBootstrap
 
 
 @pytest.mark.usefixtures("mock_rd", "mock_cm", "mock_hm")

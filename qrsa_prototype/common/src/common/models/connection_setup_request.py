@@ -2,9 +2,11 @@ from typing import NewType, Dict, Union, List
 from pydantic import Field, BaseModel
 from ipaddress import IPv4Address, IPv6Address
 
-from common.models.app_performance_requirement import ApplicationPerformanceRequirement
 from common.models.header import Header
 from common.models.performance_indicator import PerformanceIndicator
+from common.models import (
+    ApplicationPerformanceRequirement,
+)
 
 ApplicationId = NewType("ApplicationId", str)
 

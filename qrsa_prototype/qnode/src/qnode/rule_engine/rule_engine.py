@@ -1,10 +1,12 @@
 from typing import Optional, Tuple, Dict, List
 from queue import Queue
 
-from common.models.ruleset import RuleSet
-from common.models.resource import ResourceMeta
-from common.models.link_allocation_update import LinkAllocationUpdate
-from common.models.link_allocation_policy import LinkAllocationPolicy
+from common.models import (
+    RuleSet,
+    ResourceMeta,
+    LinkAllocationUpdate,
+    LinkAllocationPolicy,
+)
 from common.type_utils import IpAddressType
 from common.log.logger import logger
 

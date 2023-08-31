@@ -2,11 +2,13 @@ from typing import Optional
 from pydantic import BaseModel, Field
 from pydantic_settings import BaseSettings
 
-from common.models.configs.routing_daemon_config import RoutingDaemonConfig
-from common.models.configs.rule_engine_config import RuleEngineConfig
-from common.models.configs.hardware_monitor_config import HardwareMonitorConfig
-from common.models.configs.connection_manager_config import ConnectionManagerConfig
-from common.models.configs.real_time_controller_config import RealTimeControllerConfig
+from common.models.configs import (
+    RoutingDaemonConfig,
+    RuleEngineConfig,
+    HardwareMonitorConfig,
+    ConnectionManagerConfig,
+    RealTimeControllerConfig,
+)
 
 
 class MetaInfo(BaseModel):

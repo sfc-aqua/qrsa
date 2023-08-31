@@ -3,7 +3,7 @@ from queue import Queue
 from typing import Dict
 
 from qnode.real_time_controller.interface import AbstractRealtimeController
-from common.models.resource import ResourceMeta
+from common.models import ResourceMeta
 from common.type_utils import IpAddressType
 
 
