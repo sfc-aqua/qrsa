@@ -43,7 +43,7 @@ jobs:
           push: false
           tags: qrsa_prototype/base:latest
       - name: Enter container
-        run: docker run -it qrsa_prototype/base:latest bash
+        run: docker run -it qrsa-qnode1-1 bash
       - name: Setup Rye
         run: rye sync -f --no-lock
       - name: Run tests
