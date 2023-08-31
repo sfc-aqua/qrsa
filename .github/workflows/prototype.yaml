@@ -31,19 +31,8 @@ jobs:
   pytest:
     runs-on: ubuntu-latest
     steps:
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v2
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
-      - name: Build base image
-        uses: docker/build-push-action@v4
-        with:
-          context: "{{defaultContext}}:qrsa_prototype"
-          target: base
-          push: false
-          tags: qrsa_prototype/base:latest
       - name: Up containers
-        run: docker-compose up -d
+        run: docker-compose up -d --build
       - name: Enter container
         run: docker exec -it qrsa-qnode1-1 bash
       - name: Setup Rye
