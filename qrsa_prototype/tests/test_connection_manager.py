@@ -71,7 +71,7 @@ class TestConnectionManager:
         """
         # There are three nodes in this network
         # (0)192.168.0.2, (1)192.168.0.3, (2)192.168.0.4 (this node)
-        csr = base_connection_setup_request(3, 2, True)  # 3 hosts, at 2 as responder
+        csr = base_connection_setup_request(3, 2)  # 3 hosts, at 2 as responder
         responder_performance_indicator = csr.performance_indicators[csr.header.src]
         cm = init_connection_manager({"meta": {"ip_address": "192.168.0.4"}})
 
@@ -110,7 +110,7 @@ class TestConnectionManager:
         # Three nodes in the network
         # (0)192.168.0.2, (1)192.168.0.3, (2)192.168.0.4 (this node)
         # This not is (1) and get request from (0) and forward it to (2)
-        csr = base_connection_setup_request(3, 1, False)  # 3 hosts, at 1
+        csr = base_connection_setup_request(3, 1)  # 3 hosts, at 1
         cm = init_connection_manager(
             {"meta": {"hostname": "test(1)", "ip_address": "192.168.0.3"}}
         )

@@ -133,11 +133,11 @@ class TestEndpoints:
             assert response.json() == {"message": "Received barrier"}
 
     def test_handle_barrier_response(
-            self,
-            test_client: Any,
-            mock_qrsa: Any,
-            base_container_config: Any,
-            base_barrier: Any,
+        self,
+        test_client: Any,
+        mock_qrsa: Any,
+        base_container_config: Any,
+        base_barrier: Any,
     ) -> None:
         _ = base_container_config("repeater", "192.168.0.3")
 

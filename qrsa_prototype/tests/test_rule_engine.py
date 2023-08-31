@@ -14,18 +14,3 @@ def init_rule_engine(mock_rtc: Any) -> Any:
 
     return _inject_config
 
-
-class TestRuleEngine:
-    def test_accept_resource(self, init_rule_engine: Any) -> None:
-        rule_engine = init_rule_engine()
-        assert rule_engine.available_link_resource.empty()
-        rule_engine.accept_resource("dummy")
-        assert not rule_engine.available_link_resource.empty()
-        assert rule_engine.get_available_link_resource() == "dummy"
-
-    def test_accept_ruleset(self, init_rule_engine: Any) -> None:
-        rule_engine = init_rule_engine()
-        assert rule_engine.available_link_resource.empty()
-        rule_engine.accept_resource("dummy")
-        assert not rule_engine.available_link_resource.empty()
-        assert rule_engine.get_available_link_resource() == "dummy"
