@@ -40,6 +40,7 @@ jobs:
           git: https://github.com/mitsuhiko/rye
           branch: main
       - name: Setup Rye
+        working-directory: qrsa_prototype
         run: rye sync
       - name: Run tests
         run: rye run pytest --cov --cov-report=Xml
