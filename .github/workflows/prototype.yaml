@@ -32,7 +32,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Up containers
-        run: docker-compose up -d --build
+        run: ls && docker-compose up -d --build
       - name: Enter container
         run: docker exec -it qrsa-qnode1-1 bash
       - name: Setup Rye
