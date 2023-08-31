@@ -28,4 +28,23 @@ jobs:
           target: controller 
           push: false
           tags: qrsa_prototype/controller:latest
-
+  pytest:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Install Rye
+        uses: baptiste0928/cargo-install@v2
+        with:
+          crate: rye
+          git: https://github.com/mitsuhiko/rye
+          branch: main
+      - name: Setup Rye
+        run: rye sync
+      - name: Run tests
+        run: rye run pytest --cov --cov-report=Xml
+      - name: Upload coverage
+        uses: codecov/codecov-action@v3
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+  
