@@ -1,0 +1,39 @@
+meta:
+  name: "qnode"
+  host_name: "qnode"
+  ip_address: "0.0.0.0"
+  pptsn_buffer_size: 1
+
+routing_daemon:
+  routing_type: "static"
+  routing_table:
+    # qnode 1: 172.18.0.2
+    qnode1:
+      # to qnode 2
+      - destination: "172.18.0.3"
+        name: "qnode2"
+        next_hop: "172.18.0.3"
+      # to qnode 3
+      - destination: "172.18.0.4"
+        name: "qnode3"
+        next_hop: "172.18.0.3"
+    # qnode 2: 172.18.0.3 
+    qnode2:
+      # to qnode 1 
+      - destination: "172.18.0.2"
+        name: "qnode1"
+        next_hop: "172.18.0.2"
+      # to qnode 3
+      - destination: "172.18.0.4"
+        name: "qnode3"
+        next_hop: "172.18.0.4"
+    # qnode 3: 172.18.0.4
+    qnode3:
+      # to qnode 1
+      - destination: "172.18.0.2"
+        name: "qnode1"
+        next_hop: "172.18.0.3"
+      # to qnode 2
+      - destination: "172.18.0.3"
+        name: "qnode2"
+        next_hop: "172.18.0.3"

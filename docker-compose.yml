@@ -2,37 +2,80 @@ version: '3.9'
 
 services:
   controller:
-    command: python server.py
+    build:
+      context: ./qrsa_prototype
+      dockerfile: ./Dockerfile
+      target: controller
     working_dir: /usr/app
+    # command: rye run python src/controller/main.py
+    command: tail -f /dev/null
     volumes:
       - ./qrsa_prototype:/usr/app/:rw
-    build: ./controller
+      - /usr/app/.venv # Not to share .venv over the multiple containers
+      - ./logs:/usr/app/logs:rw
+      - /var/run/docker.sock:/var/run/docker.sock:rw
     ports:
       - 8080
+      - 9000:9000
     networks:
-      - global
+      qrsa_net:
+        ipv4_address: 172.18.0.254
   qnode1:
-    command: python server.py
+    build:
+      context: ./qrsa_prototype
+      dockerfile: ./Dockerfile
+      target: base
+    command: rye run python src/qnode/main.py
     working_dir: /usr/app
     volumes:
       - ./qrsa_prototype:/usr/app/:rw
-    build: ./qnode
+      - /usr/app/.venv
+      - ./logs:/usr/app/logs:rw
     ports:
       - 8080
+    hostname: qnode1
     networks:
-      - global
+      qrsa_net:
+        ipv4_address: 172.18.0.2
   qnode2:
-    command: python server.py
+    build:
+      context: ./qrsa_prototype
+      dockerfile: ./Dockerfile
+      target: base
+    command: rye run python src/qnode/main.py
     working_dir: /usr/app
-    build: ./qnode
     ports:
       - 8080
+    hostname: qnode2
     networks:
-      - global
+      qrsa_net:
+        ipv4_address: 172.18.0.3
     volumes:
       - ./qrsa_prototype:/usr/app/:rw
+      - /usr/app/.venv
+      - ./logs:/usr/app/logs:rw
+  qnode3:
+    build:
+      context: ./qrsa_prototype
+      dockerfile: ./Dockerfile
+      target: base
+    command: rye run python src/qnode/main.py
+    working_dir: /usr/app
+    ports:
+      - 8080
+    hostname: qnode3
+    networks:
+      qrsa_net:
+        ipv4_address: 172.18.0.4
+    volumes:
+      - ./qrsa_prototype:/usr/app/:rw
+      - /usr/app/.venv
+      - ./logs:/usr/app/logs:rw
 
   
 networks:
-  global:
+  qrsa_net:
     driver: bridge
+    ipam:
+      config:
+        - subnet: 172.18.0.0/24
