@@ -4,9 +4,9 @@
 /* eslint-disable */
 
 export enum ContainerStatus {
-	RUNNING = 'running',
-	STOPPED = 'stopped',
-	RESTARTING = 'restarting',
-	PAUSED = 'paused',
-	EXITED = 'exited'
+    RUNNING = 'running',
+    STOPPED = 'stopped',
+    RESTARTING = 'restarting',
+    PAUSED = 'paused',
+    EXITED = 'exited',
 }

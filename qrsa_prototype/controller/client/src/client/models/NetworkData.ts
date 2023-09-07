@@ -7,6 +7,7 @@ import type { LinkData } from './LinkData';
 import type { QNodeData } from './QNodeData';
 
 export type NetworkData = {
-	qnodes: Array<QNodeData>;
-	links: Array<LinkData>;
+    qnodes: Array<QNodeData>;
+    links: Array<LinkData>;
 };
+

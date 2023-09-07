@@ -4,6 +4,7 @@
 /* eslint-disable */
 
 export type ProcessesInfo = {
-	Processes: Array<Array<string>>;
-	Titles: Array<string>;
+    Processes: Array<Array<string>>;
+    Titles: Array<string>;
 };
+

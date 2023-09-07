@@ -4,7 +4,8 @@
 /* eslint-disable */
 
 export type LinkData = {
-	id: string;
-	qnode1_id: string;
-	qnode2_id: string;
+    id: string;
+    qnode1_id: string;
+    qnode2_id: string;
 };
+

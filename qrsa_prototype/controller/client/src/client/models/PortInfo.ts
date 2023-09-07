@@ -4,6 +4,7 @@
 /* eslint-disable */
 
 export type PortInfo = {
-	HostIp: string;
-	HostPort: string;
+    HostIp: string;
+    HostPort: string;
 };
+
