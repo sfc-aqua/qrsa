@@ -1,11 +1,9 @@
 <script lang="ts">
 	import cytoscape from 'cytoscape';
 	import { onMount } from 'svelte';
-	import type { ContainerInfo } from '../client';
 	import QNodeInfo from './QNodeInfo.svelte';
-	import { links } from '../stores/containers';
+	import { networks } from '../stores/network';
 	import LinkInfo from './LinkInfo.svelte';
-	export let containers: ContainerInfo[] = [];
 	let cy: cytoscape.Core | undefined;
 	let selectedQNodeId: string | undefined;
 	let selectedLinkId: string | undefined;
@@ -66,21 +64,19 @@
 	$: if (cy !== undefined) {
 		const layout = cy.layout(LAYOUT_OPTION);
 		cy.startBatch();
-		for (let i = 0; i < containers.length; i++) {
-			const c = containers[i];
-			if (c.name.includes('controller')) continue;
-			const e = cy.getElementById(c.id);
+		for (let i = 0; i < $networks.qnodes.length; i++) {
+			const qnode = $networks.qnodes[i];
+			const e = cy.getElementById(qnode.id);
 			if (e.length > 0) continue;
-			const elem = cy?.add({ data: { id: c.id, name: c.name } });
+			const elem = cy?.add({ data: { id: qnode.id, name: qnode.container?.name } });
 			elem.on('select', ({ target }) => {
 				selectedLinkId = undefined;
 				selectedQNodeId = target.data().id;
 			});
 		}
-		for (let i = 0; i < $links.length; i++) {
-			const l = $links[i];
-			const id = l.id;
-			const [qnodeId1, qnodeId2] = l.qnodeIds.values();
+		for (let i = 0; i < $networks.links.length; i++) {
+			const l = $networks.links[i];
+			const { qnode1_id: qnodeId1, qnode2_id: qnodeId2, id } = l;
 			const edge = cy.getElementById(id);
 			if (edge.length > 0) continue;
 			if (cy.getElementById(qnodeId1).length === 0 || cy.getElementById(qnodeId2).length === 0)

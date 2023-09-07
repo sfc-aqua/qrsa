@@ -1,8 +1,8 @@
 <script lang="ts">
-	import { links } from '../stores/containers';
+	import { networks } from '../stores/network';
 	export let linkId: string | undefined;
 	let currentLinkId: string | undefined;
-	$: link = $links.find((l) => l.id === linkId);
+	$: link = $networks.links.find((l) => l.id === linkId);
 	$: if (currentLinkId != linkId) {
 		currentLinkId = linkId;
 	}

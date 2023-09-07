@@ -4,8 +4,8 @@
 /* eslint-disable */
 
 export enum PumbaDelayDistribution {
-    UNIFORM = 'uniform',
-    NORMAL = 'normal',
-    PARETO = 'pareto',
-    PARETONORMAL = 'paretonormal',
+	UNIFORM = 'uniform',
+	NORMAL = 'normal',
+	PARETO = 'pareto',
+	PARETONORMAL = 'paretonormal'
 }

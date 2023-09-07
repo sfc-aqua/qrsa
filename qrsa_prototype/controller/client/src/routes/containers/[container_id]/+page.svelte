@@ -1,11 +1,11 @@
 <script lang="ts">
 	import type { PageData } from './$types';
-	import { containers } from '../../../stores/containers';
+	import { networks } from '../../../stores/network';
 	import type { ContainerInfo } from '../../../client';
 
 	export let data: PageData;
 	let container: ContainerInfo | undefined;
-	$: container = $containers.find((c) => c.id === data.container_id);
+	$: container = $networks.qnodes.find((c) => c.id === data.container_id)?.container || undefined;
 </script>
 
 <section>

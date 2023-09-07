@@ -2,7 +2,7 @@
 	import API from '$lib/api';
 	import { onDestroy } from 'svelte';
 	import type { CancelablePromise } from '../client';
-	import { containers } from '../stores/containers';
+	import { networks } from '../stores/network';
 
 	export let containerId: string | undefined = undefined;
 	let pingStates: {
@@ -10,7 +10,7 @@
 	} = {};
 	const ping = (target: string) => {
 		if (!containerId) return;
-        const key = containerId + target;
+		const key = containerId + target;
 		pingStates[key] = { cancellable: null, result: '' };
 		const cancellable = API.ping(containerId, target, (result: string) => {
 			const lines = result.split('\n').filter(Boolean);
@@ -19,10 +19,10 @@
 				pingStates[key]['result'] = line.split(':')[1];
 			}
 		});
-        pingStates[key].cancellable = cancellable;
+		pingStates[key].cancellable = cancellable;
 	};
 	const cancel = (key: string) => {
-        console.log(containerId, key, "destroy")
+		console.log(containerId, key, 'destroy');
 		pingStates[key].cancellable?.cancel();
 		pingStates[key].cancellable = null;
 	};
@@ -36,7 +36,7 @@
 <h1>ping</h1>
 {containerId}
 <h2>target</h2>
-{#each $containers as container}
+{#each $networks.qnodes as container}
 	{#if container.id !== containerId}
 		{@const key = containerId + container.name}
 		<div>
@@ -52,7 +52,4 @@
 {/each}
 
 <style>
-	span {
-		white-space: pre-wrap;
-	}
 </style>

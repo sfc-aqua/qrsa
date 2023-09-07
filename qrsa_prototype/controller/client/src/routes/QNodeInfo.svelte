@@ -1,9 +1,9 @@
 <script lang="ts">
-	import { containers } from '../stores/containers';
+	import { networks } from '../stores/network';
 	import Ping from './Ping.svelte';
 	export let qnodeId: string | undefined;
 	let currentQNodeId: string | undefined;
-	$: qnode = $containers.find((c) => c.id === qnodeId);
+	$: qnode = $networks.qnodes.find((q) => q.id === qnodeId);
 	$: if (currentQNodeId != qnodeId) {
 		currentQNodeId = qnodeId;
 	}

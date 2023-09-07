@@ -1,6 +1,4 @@
 <script>
-	import ContainerTable from './ContainerTable.svelte';
-	import { containers } from '../stores/containers';
 </script>
 
 <svelte:head>
@@ -10,7 +8,6 @@
 
 <section>
 	<h1>Home</h1>
-	<ContainerTable containers={$containers} />
 </section>
 
 <style>
