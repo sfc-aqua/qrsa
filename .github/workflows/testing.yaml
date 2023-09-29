@@ -38,7 +38,7 @@ jobs:
               command: clean
           - name: Run test and get coverage
             run: |
-              cargo tarpaulin --workspace --all-features --out Xml
+              cargo tarpaulin --workspace --all-features --out xml
           - name: Upload to codecov
             uses: codecov/codecov-action@v3
             with:
