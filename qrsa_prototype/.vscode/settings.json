@@ -1,6 +1,8 @@
 {
     "python.testing.pytestArgs": [
-        "tests"
+        "tests",
+        "controller",
+        "-s"
     ],
     "python.testing.unittestEnabled": false,
     "python.testing.pytestEnabled": true,
@@ -10,4 +12,9 @@
         "./common/src",
         "./.venv/lib/python3.11/site-packages"
     ],
+    "terminal.integrated.automationProfile.linux": {
+        "path": "/bin/bash",
+        "icon": "terminal",
+    },
+    "terminal.integrated.defaultProfile.linux": "bash",
 }
