@@ -1,3 +1,4 @@
+from datetime import datetime, timedelta, timezone
 from controller.container import ContainerInfo
 from controller.link import LinkData
 from fastapi import Depends, FastAPI
@@ -32,7 +33,7 @@ def NetworkManager() -> network_manager.NetworkManager:
 
 
 DockerClientDep = Annotated[DockerClient, Depends()]
-NetworkManagerDep = Annotated[NetworkManager, Depends()]
+NetworkManagerDep = Annotated[NetworkManager, Depends(NetworkManager)]
 
 
 @api.get("/network", response_model=network_manager.NetworkData)
@@ -52,8 +53,21 @@ async def stop_container(id, client: DockerClientDep):
 
 
 @api.get("/containers/{id}/logs")
-async def log_container(id, client: DockerClientDep):
-    return {"logs": client.containers.get(id).logs()}
+async def log_container(
+    id,
+    client: DockerClientDep,
+    nm: network_manager.NetworkManager = Depends(NetworkManager),
+):
+    qnode = nm.get_qnode(id)
+    return {"logs": qnode.get_log(client)}
+
+
+@api.get("/containers/{id}/clear_log_retrieval_at")
+def clear_log_retrieval_at(
+    id, nm: network_manager.NetworkManager = Depends(NetworkManager)
+):
+    qnode = nm.get_qnode(id)
+    qnode.log_retrieved_at = datetime.now() - timedelta(hours=1)
 
 
 @api.get("/containers/{id}/diff")

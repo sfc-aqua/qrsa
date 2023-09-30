@@ -4,7 +4,7 @@
 </script>
 
 <section>
-	<h1>Docker Containers</h1>
+	<h1>QNode</h1>
 	<NetworkGraph />
 	<QNodeTable />
 </section>

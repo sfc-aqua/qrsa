@@ -1,7 +1,8 @@
 <script lang="ts">
 	import type { PageData } from './$types';
-	import { networks } from '../../../stores/network';
+	import { networks, logs, clearLog } from '../../../stores/network';
 	import type { ContainerInfo } from '../../../client';
+	import API from '$lib/api';
 
 	export let data: PageData;
 	let container: ContainerInfo | undefined;
@@ -10,8 +11,11 @@
 
 <section>
 	<h1>Container: {container?.name} : {container?.id}</h1>
-	<div>{JSON.stringify(container?.top)}</div>
-	<div class="code">{JSON.stringify(container?.attrs, undefined, 2)}</div>
+	<button on:click={() => API.clearLogRetrievedAt(data.container_id)}>get all log</button>
+	<button on:click={() => clearLog(data.container_id)}>clear</button>
+	<div class="code">{$logs[data.container_id]}</div>
+	<!-- <div>{JSON.stringify(container?.top)}</div> -->
+	<!-- <div class="code">{JSON.stringify(container?.attrs, undefined, 2)}</div> -->
 </section>
 
 <style>

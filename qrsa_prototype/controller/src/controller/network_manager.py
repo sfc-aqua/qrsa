@@ -57,6 +57,11 @@ class NetworkManager:
                 if link is None:
                     self.links.append(Link(q1, q2))
 
+    def get_qnode(self, id: str) -> Optional[QNode]:
+        if not self.qnodes:
+            return None
+        return next(filter(lambda q: q.id == id, self.qnodes))
+
     def get_network(self) -> "NetworkData":
         return NetworkData(
             qnodes=[qnode.dump_json() for qnode in self.qnodes],

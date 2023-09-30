@@ -20,7 +20,7 @@
 				<a href="/">Home</a>
 			</li>
 			<li aria-current={$page.url.pathname === '/containers' ? 'page' : undefined}>
-				<a href="/containers">Containers</a>
+				<a href="/qnode">QNodes</a>
 			</li>
 		</ul>
 		<svg viewBox="0 0 2 3" aria-hidden="true">

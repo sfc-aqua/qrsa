@@ -87,6 +87,27 @@ export class DefaultService {
     }
 
     /**
+     * Clear Log Retrieval At
+     * @param id
+     * @returns any Successful Response
+     * @throws ApiError
+     */
+    public static clearLogRetrievalAtContainersIdClearLogRetrievalAtGet(
+        id: any,
+    ): CancelablePromise<any> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/containers/{id}/clear_log_retrieval_at',
+            path: {
+                'id': id,
+            },
+            errors: {
+                422: `Validation Error`,
+            },
+        });
+    }
+
+    /**
      * Diff Container
      * @param id
      * @returns any Successful Response
