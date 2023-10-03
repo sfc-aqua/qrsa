@@ -2,6 +2,7 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
+import type { LogResult } from '../models/LogResult';
 import type { NetworkData } from '../models/NetworkData';
 import type { PumbaDelayDistribution } from '../models/PumbaDelayDistribution';
 
@@ -73,7 +74,7 @@ export class DefaultService {
      */
     public static logContainerContainersIdLogsGet(
         id: any,
-    ): CancelablePromise<any> {
+    ): CancelablePromise<(LogResult | null)> {
         return __request(OpenAPI, {
             method: 'GET',
             url: '/containers/{id}/logs',
@@ -173,6 +174,38 @@ export class DefaultService {
             },
             query: {
                 'cmd': cmd,
+            },
+            errors: {
+                422: `Validation Error`,
+            },
+        });
+    }
+
+    /**
+     * Startconnectionsetup
+     * @param id
+     * @param destination
+     * @param minimumFidelity
+     * @param minimumBellPairBandwidth
+     * @returns any Successful Response
+     * @throws ApiError
+     */
+    public static startConnectionSetupContainerIdStartConnectionSetupPost(
+        id: string,
+        destination: string,
+        minimumFidelity: number,
+        minimumBellPairBandwidth: number,
+    ): CancelablePromise<any> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/container/{id}/start_connection_setup',
+            path: {
+                'id': id,
+            },
+            query: {
+                'destination': destination,
+                'minimum_fidelity': minimumFidelity,
+                'minimum_bell_pair_bandwidth': minimumBellPairBandwidth,
             },
             errors: {
                 422: `Validation Error`,

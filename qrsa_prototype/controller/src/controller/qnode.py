@@ -1,5 +1,7 @@
 from datetime import datetime, timedelta
-from typing import Dict, List, Optional, Coroutine
+from typing import Dict, List, Optional, Coroutine, Tuple
+import aiohttp
+from common.models.application_bootstrap import ApplicationBootstrap
 
 import docker
 
@@ -20,6 +22,11 @@ class QNode:
         if container is not None:
             self.container = container
             self.id = container.id
+            self.ip_address_list = [
+                container.attrs["NetworkSettings"]["Networks"]["qrsa_qrsa_net"][
+                    "IPAddress"
+                ]
+            ]
         else:
             raise RuntimeError("Not implemented yet")
         self.name = ""
@@ -67,6 +74,40 @@ class QNode:
             cmd, stream=True, stdout=True, stderr=True, tty=True, demux=True
         )
         return result
+
+    async def start_connection_setup(
+        self,
+        destination: str,
+        minimum_fidelity: float,
+        minimum_bell_pair_bandwidth: int,
+    ) -> Tuple[str, int]:
+        req = ApplicationBootstrap(
+            **{
+                "destination": destination,
+                "application_performance_requirement": {
+                    "minimum_fidelity": minimum_fidelity,
+                    "minimum_bell_pair_bandwidth": minimum_bell_pair_bandwidth,
+                },
+            }
+        ).model_dump_json()
+        initiator_host = self.ip_address_list[0]
+        try:
+            url = f"http://{initiator_host}:8080/start_connection_setup"
+            print(url, req)
+            async with aiohttp.ClientSession() as session:
+                async with session.post(
+                    url,
+                    data=req,
+                    headers={"Content-Type": "application/json"},
+                ) as response:
+                    if response.status > 399:
+                        resp = response.text()
+                        return (resp, response.status)
+                    else:
+                        resp = await response.json()
+                        return (resp, response.status)
+        except Exception as e:
+            raise e
 
 
 class QNodeData(BaseModel):

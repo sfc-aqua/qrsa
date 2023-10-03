@@ -6,8 +6,14 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 import docker
 from typing import List, Annotated, Optional
+from typing_extensions import TypedDict
 from controller.pumba import PumbaDelayDistribution
 from controller import network_manager
+
+
+class LogResult(TypedDict):
+    logs: str
+
 
 api = FastAPI()
 origins = ["http://127.0.0.1:5173", "http://localhost:5173"]
@@ -57,8 +63,10 @@ async def log_container(
     id,
     client: DockerClientDep,
     nm: network_manager.NetworkManager = Depends(NetworkManager),
-):
+) -> Optional[LogResult]:
     qnode = nm.get_qnode(id)
+    if qnode is None:
+        return None
     return {"logs": qnode.get_log(client)}
 
 
@@ -87,6 +95,22 @@ async def exec_run_container_stream(id: str, cmd: str, client: DockerClientDep):
         cmd, stream=True, stdout=True, stderr=True
     )
     return StreamingResponse(content=result, media_type="text/plain")
+
+
+@api.post("/container/{id}/start_connection_setup")
+async def startConnectionSetup(
+    id: str,
+    destination: str,
+    minimum_fidelity: float,
+    minimum_bell_pair_bandwidth: int,
+    nm: network_manager.NetworkManager = Depends(NetworkManager),
+):
+    qnode = nm.get_qnode(id)
+    dest_qnode = nm.get_qnode(destination)
+    resp, status = await qnode.start_connection_setup(
+        dest_qnode.ip_address_list[0], minimum_fidelity, minimum_bell_pair_bandwidth
+    )
+    print({"message": resp, "status": status})
 
 
 @api.post("/links/{id}/delay")

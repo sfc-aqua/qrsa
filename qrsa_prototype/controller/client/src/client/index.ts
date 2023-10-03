@@ -11,6 +11,7 @@ export type { ContainerInfo } from './models/ContainerInfo';
 export { ContainerStatus } from './models/ContainerStatus';
 export type { HTTPValidationError } from './models/HTTPValidationError';
 export type { LinkData } from './models/LinkData';
+export type { LogResult } from './models/LogResult';
 export type { NetworkData } from './models/NetworkData';
 export type { PortInfo } from './models/PortInfo';
 export type { ProcessesInfo } from './models/ProcessesInfo';

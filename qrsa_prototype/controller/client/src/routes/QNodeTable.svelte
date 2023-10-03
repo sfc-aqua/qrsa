@@ -22,6 +22,8 @@
 			<th>Status</th>
 			<th>Port</th>
 			<th>Action</th>
+			<th></th>
+			<th>Start Conn to</th>
 		</tr>
 	</thead>
 	<tbody>
@@ -40,6 +42,13 @@
 				{/if}
 				<td>
 					<a href={`/qnode/${qnode.id}`}>show</a>
+				</td>
+				<td>
+					{#each $networks.qnodes as targetNode}
+						{#if targetNode.id != qnode.id}
+							<button on:click={() => API.startConnectionSetup(qnode.id,targetNode.id,0,1)}>{targetNode.name}</button>
+						{/if}
+					{/each}
 				</td>
 			</tr>
 		{/each}
