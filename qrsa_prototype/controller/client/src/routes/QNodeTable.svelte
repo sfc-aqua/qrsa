@@ -1,7 +1,7 @@
 <script lang="ts">
 	import type { PortInfo } from '../client';
 	import API from '$lib/api';
-	import { networks } from '../stores/network';
+	import { clearLog, networks } from '../stores/network';
 
 	const convertPortInfo = (ports: Record<string, PortInfo[]> | undefined): string => {
 		if (!ports) return '';
@@ -11,6 +11,11 @@
 			''
 		);
 	};
+
+	const startConnectionSetup = (initiatorQNodeId: string, responderQNodeId: string) => {
+		$networks.qnodes.forEach(({id}) => clearLog(id));
+		API.startConnectionSetup(initiatorQNodeId, responderQNodeId,0,1)
+	}
 </script>
 
 <table>
@@ -46,7 +51,7 @@
 				<td>
 					{#each $networks.qnodes as targetNode}
 						{#if targetNode.id != qnode.id}
-							<button on:click={() => API.startConnectionSetup(qnode.id,targetNode.id,0,1)}>{targetNode.name}</button>
+							<button on:click={() => startConnectionSetup(qnode.id, targetNode.id)}>{targetNode.name}</button>
 						{/if}
 					{/each}
 				</td>

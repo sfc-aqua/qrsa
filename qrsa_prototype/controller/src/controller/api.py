@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta, timezone
 from controller.container import ContainerInfo
 from controller.link import LinkData
-from fastapi import Depends, FastAPI
+from fastapi import Depends, FastAPI, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 import docker
@@ -103,10 +103,18 @@ async def startConnectionSetup(
     destination: str,
     minimum_fidelity: float,
     minimum_bell_pair_bandwidth: int,
+    response: Response,
     nm: network_manager.NetworkManager = Depends(NetworkManager),
 ):
     qnode = nm.get_qnode(id)
+    if qnode is None:
+        response.status_code = 404
+        return {"message": f"qnode {id} not found"}
     dest_qnode = nm.get_qnode(destination)
+    if dest_qnode is None:
+        response.status_code = 404
+        return {"message": f"dest node {destination} not found"}
+
     resp, status = await qnode.start_connection_setup(
         dest_qnode.ip_address_list[0], minimum_fidelity, minimum_bell_pair_bandwidth
     )

@@ -101,7 +101,7 @@ class QNode:
                     headers={"Content-Type": "application/json"},
                 ) as response:
                     if response.status > 399:
-                        resp = response.text()
+                        resp = await response.text()
                         return (resp, response.status)
                     else:
                         resp = await response.json()
