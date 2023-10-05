@@ -17,4 +17,5 @@
         "icon": "terminal",
     },
     "terminal.integrated.defaultProfile.linux": "bash",
+    "python.analysis.typeCheckingMode": "basic",
 }
