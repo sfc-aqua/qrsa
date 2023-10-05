@@ -2,7 +2,7 @@
 Quantum Repeater/Router Software Architecture (QRSA) is a software architectural proposal for recursive quantum networks [^VAN2022] (https://github.com/sfc-aqua/qrsa/tree/main#references).
 
 ## Design
-The main software components in current version of QRSA are listed as follow [^SAT2022] (https://github.com/sfc-aqua/qrsa/tree/main#references): 
+The main software components in current version of QRSA are listed as follow [^SAT2022](https://github.com/sfc-aqua/qrsa/tree/main#references): 
 1. [ConnectionManager(CM)](https://github.com/sfc-aqua/qrsa/tree/main/qrsa/src/connection_manager)
 1. [HardwareMonitor(HM)](https://github.com/sfc-aqua/qrsa/tree/main/qrsa/src/hardware_monitor)
 1. [Real-TimeController(RTC)](https://github.com/sfc-aqua/qrsa/tree/main/qrsa/src/realtime_controller)
