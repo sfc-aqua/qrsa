@@ -3,6 +3,7 @@
 	import { networks, logs, clearLog } from '../../../stores/network';
 	import type { ContainerInfo } from '../../../client';
 	import API from '$lib/api';
+	import Log from '../../Log.svelte';
 
 	export let data: PageData;
 	let container: ContainerInfo | undefined;
@@ -13,9 +14,7 @@
 	<h1>Container: {container?.name} : {container?.id}</h1>
 	<button on:click={() => API.clearLogRetrievedAt(data.container_id)}>get all log</button>
 	<button on:click={() => clearLog(data.container_id)}>clear</button>
-	<div class="code">{$logs[data.container_id]}</div>
-	<!-- <div>{JSON.stringify(container?.top)}</div> -->
-	<!-- <div class="code">{JSON.stringify(container?.attrs, undefined, 2)}</div> -->
+	<Log qnodeId={data.container_id}/>
 </section>
 
 <style>
