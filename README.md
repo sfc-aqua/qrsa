@@ -1,5 +1,5 @@
 # qrsa
-Quantum Repeater/Router Software Architecture (QRSA) is a software architectural proposal for recursive quantum networks [[^VAN2022]] (https://github.com/sfc-aqua/qrsa/tree/main#references).
+Quantum Repeater/Router Software Architecture (QRSA) is a software architectural proposal for recursive quantum networks [[^VAN2022]](https://github.com/sfc-aqua/qrsa/tree/main#references).
 
 ## Design
 The main software components in current version of QRSA are listed as follow [[^SAT2022]](https://github.com/sfc-aqua/qrsa/tree/main#references): 
