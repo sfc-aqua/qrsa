@@ -18,7 +18,7 @@ const createLogRetrievalTimer = (id: string, update) => {
 					return { ...values, [id]: [...values[id], logs] };
 				});
 			}),
-		700
+		1000
 	);
 };
 

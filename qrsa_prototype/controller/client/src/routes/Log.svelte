@@ -2,8 +2,10 @@
 	import { logs } from '../stores/network';
 	import LogLine from './LogLine.svelte';
 	export let qnodeId: string;
+	let prettyLog = true;
 	const parseLog = (log: string): Array<string | string[]> => {
 		const logs = log.split('\n');
+		if (!prettyLog) return logs;
 		let readingTraceback = false;
 		let buf = [];
 		const results = [];
@@ -11,6 +13,10 @@
 			const line = logs[i];
 			const firstCol = line.split(':')[0];
 			if (['INFO', 'WARN', 'ERROR', 'Exception'].indexOf(firstCol) != -1) {
+				results.push(line);
+				continue;
+			}
+			if (line.length > 0 && line[0] == '{') {
 				results.push(line);
 				continue;
 			}
@@ -37,11 +43,16 @@
 </script>
 
 <section class="log-container">
+	{#if prettyLog}
+		<button on:click={() => (prettyLog = false)}>switch to raw log</button>
+	{:else}
+		<button on:click={() => (prettyLog = true)}>switch to pretty log (experimental)</button>
+	{/if}
 	{#if qnodeId in $logs}
 		{@const logText = $logs[qnodeId]}
 		{#each logText as log}
 			{#each parseLog(log) as line}
-				<LogLine log={line} />
+				<LogLine log={line} pretty={prettyLog} />
 			{/each}
 		{/each}
 	{/if}

@@ -4,6 +4,7 @@
 	import 'svelte-highlight/styles/github.css';
 
 	export let log: string | string[];
+	export let pretty: boolean;
 	let json: { [key: string]: any } | undefined = undefined;
 	let color = '';
 	let traceback: string[] = [];
@@ -23,13 +24,16 @@
 			color = SEVERITY_DICT[firstCol as keyof typeof SEVERITY_DICT];
 		}
 
-		try {
-			json = JSON.parse(log);
-		} catch {} // eslint-disable-line
+		if (pretty) {
+			try {
+				json = JSON.parse(log);
+			} catch {} // eslint-disable-line
+		}
 	}
 </script>
 
 {#if json != null}
+	<span class="json-log-header {json.level}">{json.level}</span>|
 	<span class="json-log">{json.message}</span>
 {:else if traceback.length > 0}
 	<span>{traceback[traceback.length - 2]}</span>
@@ -55,6 +59,10 @@
 <br />
 
 <style>
+	.json-log-header {
+		width: 5rem;
+		display: inline-block;
+	}
 	.json-log {
 		font-weight: 800;
 	}
