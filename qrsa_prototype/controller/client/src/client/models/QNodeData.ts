@@ -6,9 +6,8 @@
 import type { ContainerInfo } from './ContainerInfo';
 
 export type QNodeData = {
-    ip_address_list: Array<string>;
-    container: (ContainerInfo | null);
-    id: string;
-    name: string;
+	ip_address_list: Array<string>;
+	container: ContainerInfo | null;
+	id: string;
+	name: string;
 };
-

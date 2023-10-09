@@ -4,6 +4,5 @@
 /* eslint-disable */
 
 export type LogResult = {
-    logs: string;
+	logs: string;
 };
-

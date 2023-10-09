@@ -5,7 +5,15 @@
 </script>
 
 <section>
-	<NetworkGraph />
-	<QNodeTable />
+	<div class="top-container">
+		<NetworkGraph />
+		<QNodeTable />
+	</div>
 	<LogMonitor />
 </section>
+
+<style>
+	.top-container {
+		display: flex;
+	}
+</style>

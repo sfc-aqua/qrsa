@@ -7,7 +7,7 @@
 		"preview": "vite preview",
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
-		"lint": "prettier --plugin-search-dir . --check . && eslint .",
+		"lint": "prettier --plugin-search-dir . --write . && eslint . --fix",
 		"format": "prettier --plugin-search-dir . --write .",
 		"generate-client": "openapi --input http://localhost:9000/api/openapi.json --output ./src/client --client axios --request ./src/lib/request.ts"
 	},
@@ -37,6 +37,7 @@
 		"@sveltejs/adapter-node": "^1.3.1",
 		"@sveltejs/adapter-static": "^2.0.3",
 		"axios": "^1.4.0",
-		"cytoscape": "^3.26.0"
+		"cytoscape": "^3.26.0",
+		"svelte-highlight": "^7.3.0"
 	}
 }

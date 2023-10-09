@@ -16,8 +16,8 @@
 		display: flex;
 		flex-direction: column;
 		min-height: 99vh;
-		height:100%;
-		max-height:100vh;
+		height: 100%;
+		max-height: 100vh;
 	}
 
 	main {

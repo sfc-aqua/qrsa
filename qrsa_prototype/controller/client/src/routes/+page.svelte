@@ -1,24 +1,19 @@
-<script>
+<script lang="ts">
+	import QNodeTable from './QNodeTable.svelte';
+	import NetworkGraph from './NetworkGraph.svelte';
+	import LogMonitor from './LogMonitor.svelte';
 </script>
 
-<svelte:head>
-	<title>Home</title>
-	<meta name="description" content="Svelte demo app" />
-</svelte:head>
-
 <section>
-	<h1>Home</h1>
+	<div class="top-container">
+		<NetworkGraph />
+		<QNodeTable />
+	</div>
+	<LogMonitor />
 </section>
 
 <style>
-	section {
+	.top-container {
 		display: flex;
-		flex-direction: column;
-		justify-content: center;
-		align-items: center;
-	}
-
-	h1 {
-		width: 100%;
 	}
 </style>

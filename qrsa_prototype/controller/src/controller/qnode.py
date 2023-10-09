@@ -11,7 +11,7 @@ from common.type_utils import IpAddressType
 
 
 class QNode:
-    ip_address_list: "List[IpAddressType]"
+    ip_address_list: "List[str]"
     container: "ContainerInfo"
     id: str
     name: str
@@ -32,6 +32,11 @@ class QNode:
         self.name = ""
         self.log_retrieved_at = datetime.now() - timedelta(hours=1)
 
+    @property
+    def ip(self):
+        return self.ip_address_list[0]
+        
+
     def dump_json(self):
         return QNodeData(
             ip_address_list=[],
@@ -42,15 +47,14 @@ class QNode:
 
     def get_log(
         self, client: Optional[docker.DockerClient] = None
-    ) -> Coroutine[bytes, None, None]:
+    ) -> bytes:
         if self.container is None:
             raise RuntimeError("not implemented yet")
         if client is None:
             raise RuntimeError("docker container requires docker client")
         since = self.log_retrieved_at
         self.log_retrieved_at = datetime.now()
-        print(since)
-        return client.containers.get(self.id).logs(since=since)
+        return client.containers.get(self.id).logs(since=since) # type: ignore
 
     def ping(self, client: docker.DockerClient, target_host: IpAddressType):
         result = self.run_cmd_stream(f"ping {target_host}", client)
@@ -70,7 +74,7 @@ class QNode:
             raise RuntimeError("not implemented yet")
         if client is None:
             raise RuntimeError("docker container requires docker client")
-        (_, result) = client.containers.get(self.container.id).exec_run(
+        (_, result) = client.containers.get(self.container.id).exec_run( # type: ignore
             cmd, stream=True, stdout=True, stderr=True, tty=True, demux=True
         )
         return result

@@ -13,9 +13,11 @@
 	};
 
 	const startConnectionSetup = (initiatorQNodeId: string, responderQNodeId: string) => {
-		$networks.qnodes.forEach(({id}) => clearLog(id));
-		API.startConnectionSetup(initiatorQNodeId, responderQNodeId,0,1)
-	}
+		$networks.qnodes.forEach(({ id }) => clearLog(id));
+		API.startConnectionSetup(initiatorQNodeId, responderQNodeId, 0, 1).catch((e) =>
+			console.error(e)
+		);
+	};
 </script>
 
 <table>
@@ -27,7 +29,7 @@
 			<th>Status</th>
 			<th>Port</th>
 			<th>Action</th>
-			<th></th>
+			<th />
 			<th>Start Conn to</th>
 		</tr>
 	</thead>
@@ -36,7 +38,7 @@
 			{@const c = qnode.container}
 			<tr>
 				<td>{qnode.id}</td>
-				<td>{c?.name}</td>
+				<td class="name">{c?.name}</td>
 				<td>{c?.attrs['NetworkSettings']['Networks']['qrsa_qrsa_net']['IPAddress']}</td>
 				<td>{c?.status}</td>
 				<td>{convertPortInfo(c?.ports)}</td>
@@ -51,7 +53,9 @@
 				<td>
 					{#each $networks.qnodes as targetNode}
 						{#if targetNode.id != qnode.id}
-							<button on:click={() => startConnectionSetup(qnode.id, targetNode.id)}>{targetNode.name}</button>
+							<button on:click={() => startConnectionSetup(qnode.id, targetNode.id)}
+								>{targetNode.name}</button
+							>
 						{/if}
 					{/each}
 				</td>
@@ -59,3 +63,9 @@
 		{/each}
 	</tbody>
 </table>
+
+<style>
+	.name {
+		font-weight: 900;
+	}
+</style>

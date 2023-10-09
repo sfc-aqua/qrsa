@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import List, Optional, cast
 
 import docker
 from pydantic import BaseModel
@@ -27,16 +27,16 @@ class NetworkManager:
         containers = [
             c
             for c in self.docker_client.containers.list(all=True)
-            if c.name.startswith("qrsa-") and not c.name.startswith("qrsa-controller")
+            if c.name.startswith("qrsa-") and not c.name.startswith("qrsa-controller") # type: ignore
         ]
         container_info_list = [
             ContainerInfo(
                 id=c.short_id,
-                name=c.name,
-                status=c.status,
-                top=c.top() if c.status == "running" else None,
+                name=c.name, # type: ignore
+                status=c.status, # type: ignore
+                top=c.top() if c.status == "running" else None, # type: ignore
                 attrs=c.attrs,
-                ports=c.ports,
+                ports=c.ports, # type: ignore
             )
             for c in containers
         ]
@@ -60,7 +60,7 @@ class NetworkManager:
     def get_qnode(self, id: str) -> Optional[QNode]:
         if not self.qnodes:
             return None
-        return next(filter(lambda q: q.id == id, self.qnodes))
+        return next(filter(lambda q: q is not None and q.id == id, self.qnodes))
 
     def get_network(self) -> "NetworkData":
         return NetworkData(
@@ -88,7 +88,7 @@ class NetworkManager:
     def update_qnode_info(self, container_info: "ContainerInfo"):
         """update qnode's container information. if the qnode doesn't exist, ignore it."""
         qnode: "Optional[QNode]" = next(
-            filter(lambda q: q.id == container_info.id, self.qnodes)
+            filter(lambda q: q is not None and q.id == container_info.id, self.qnodes)
         )
         if qnode is None:
             return
