@@ -7,8 +7,9 @@
 		"preview": "vite preview",
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
-		"lint": "prettier --plugin-search-dir . --check . && eslint .",
-		"format": "prettier --plugin-search-dir . --write ."
+		"lint": "prettier --plugin-search-dir . --write . && eslint . --fix",
+		"format": "prettier --plugin-search-dir . --write .",
+		"generate-client": "openapi --input http://localhost:9000/api/openapi.json --output ./src/client --client axios --request ./src/lib/request.ts"
 	},
 	"devDependencies": {
 		"@fontsource/fira-mono": "^4.5.10",
@@ -16,11 +17,13 @@
 		"@sveltejs/adapter-auto": "^2.0.0",
 		"@sveltejs/kit": "^1.20.4",
 		"@types/cookie": "^0.5.1",
+		"@types/cytoscape": "^3.19.10",
 		"@typescript-eslint/eslint-plugin": "^5.45.0",
 		"@typescript-eslint/parser": "^5.45.0",
 		"eslint": "^8.28.0",
 		"eslint-config-prettier": "^8.5.0",
 		"eslint-plugin-svelte": "^2.30.0",
+		"openapi-typescript-codegen": "^0.25.0",
 		"prettier": "^2.8.0",
 		"prettier-plugin-svelte": "^2.10.1",
 		"svelte": "^4.0.5",
@@ -31,6 +34,10 @@
 	},
 	"type": "module",
 	"dependencies": {
-		"@sveltejs/adapter-static": "^2.0.3"
+		"@sveltejs/adapter-node": "^1.3.1",
+		"@sveltejs/adapter-static": "^2.0.3",
+		"axios": "^1.4.0",
+		"cytoscape": "^3.26.0",
+		"svelte-highlight": "^7.3.0"
 	}
 }
