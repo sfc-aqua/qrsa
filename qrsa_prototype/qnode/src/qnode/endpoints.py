@@ -77,7 +77,7 @@ async def handle_connection_setup_request(
     routing_daemon: RoutingDaemon = Depends(Provide[Container.routing_daemon]),
     rule_engine: RuleEngine = Depends(Provide[Container.rule_engine]),
     config: Any = Depends(Provide[Container.config]),
-) -> dict:
+) -> JSONResponse:
     """
     Experimental function to handle connection setup requests
     :param request: ConnectionSetupRequest
@@ -151,7 +151,7 @@ async def handle_connection_setup_response(
     ),
     routing_daemon: RoutingDaemon = Depends(Provide[Container.routing_daemon]),
     rule_engine: RuleEngine = Depends(Provide[Container.rule_engine]),
-) -> dict:
+) -> JSONResponse:
     """
     Experimental function to handle connection setup responses
     :param response: ConnectionSetupResponse
