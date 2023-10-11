@@ -80,11 +80,6 @@ class ConnectionManager(AbstractConnectionManager):
             }
         ).model_dump_json()
 
-        # Send request to next hop
-        response, status_code = await self.send_message(
-            csr_json, next_hop, "connection_setup_request"
-        )
-
         # Add record of this connection to pending connections
         self.pending_connections[application_id] = ConnectionMeta(
             **{
@@ -94,6 +89,12 @@ class ConnectionManager(AbstractConnectionManager):
                 "destination": destination,
             }
         )
+
+        # Send request to next hop
+        response, status_code = await self.send_message(
+            csr_json, next_hop, "connection_setup_request"
+        )
+
         return (response, status_code)
 
     async def respond_to_connection_setup_request(
@@ -148,7 +149,7 @@ class ConnectionManager(AbstractConnectionManager):
                 # This doesn't have to be sent to other nodes.
                 self_ruleset = rulesets[host]
             else:
-                logger.debug(f"Sending RuleSet to {host}")
+                logger.debug(f"Sending RuleSet to {host}, id: {given_request.application_id}")
                 # Take a ruleset and send it to destination
                 connection_setup_response_json = ConnectionSetupResponse(
                     **{
@@ -206,14 +207,15 @@ class ConnectionManager(AbstractConnectionManager):
             }
         ).model_dump_json()
 
+        # When the connection setup response is received,
+        # this connection meta will be moved to running connections
+        self.pending_connections[given_request.application_id] = conn_info
+
         # Send request to next hop
         response, status_code = await self.send_message(
             new_request_json, next_hop, "connection_setup_request"
         )
 
-        # When the connection setup response is received,
-        # this connection meta will be moved to running connections
-        self.pending_connections[given_request.application_id] = conn_info
         return (response, status_code)
 
     def update_pending_connection_to_running_connection(
@@ -330,6 +332,10 @@ class ConnectionManager(AbstractConnectionManager):
                     data=message,
                     headers=headers,
                 ) as response:
+                    if response.content_type == "text/plain" :
+                        text = await response.text()
+                        logger.warn(f"received text/plain: {text}")
+                        return (text, response.status)
                     resp = await response.json()
                     return (resp, response.status)
         except Exception as e:

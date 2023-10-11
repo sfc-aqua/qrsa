@@ -1,6 +1,8 @@
 import socket
 import yaml
-from fastapi import FastAPI
+import aiohttp
+from fastapi import FastAPI, Request
+from fastapi.responses import JSONResponse
 
 from qnode.endpoints import router
 from qnode.containers import Container
@@ -16,6 +18,7 @@ def create_server() -> FastAPI:
     container.config.from_dict(config.model_dump())
 
     app = FastAPI()
+
     app.container = container
     app.include_router(router)
     return app
