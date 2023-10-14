@@ -8,8 +8,7 @@ the api server can access to qnodes to collect information.
 
 first of all, you need to start the api server.
 ```sh
-$ cd controller
-$ python src/controller/main.py 
+$ python src/controller/main.py
 ```
 
 
@@ -18,7 +17,7 @@ and then you need to start the client in another terminal.
 ```sh
 $ cd controller/client
 $ npm install
-$ npm run dev 
+$ npm run dev
 ```
 
 then you can access to http://localhost:5173
