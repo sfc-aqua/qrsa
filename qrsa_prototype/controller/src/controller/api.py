@@ -1,11 +1,14 @@
+import asyncio
 from datetime import datetime, timedelta, timezone
 from controller.container import ContainerInfo
+from controller.event_collector import log_collector, network_collector
 from controller.link import LinkData
-from fastapi import Depends, FastAPI, Response
+from controller.utils import PubSub
+from fastapi import Depends, FastAPI, Response, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 import docker
-from typing import List, Annotated, Optional
+from typing import Optional
 from typing_extensions import TypedDict
 from controller.pumba import PumbaDelayDistribution
 from controller import network_manager
@@ -16,6 +19,7 @@ class LogResult(TypedDict):
 
 
 api = FastAPI()
+ws_sessions = set()
 origins = ["http://127.0.0.1:5173", "http://localhost:5173"]
 
 api.add_middleware(
@@ -26,16 +30,57 @@ api.add_middleware(
     allow_headers=["*"],
 )
 
+__network_manager = network_manager.NetworkManager()
+channel = PubSub()
+
+
+def Channel() -> PubSub:
+    return channel
+
+
+def NetworkManager() -> network_manager.NetworkManager:
+    return __network_manager
+
 
 def DockerClient() -> docker.DockerClient:
     return docker.client.from_env()
 
 
-__network_manager = network_manager.NetworkManager()
+@api.on_event("startup")
+async def startup():
+    loop = asyncio.get_running_loop()
+    loop.create_task(log_collector(__network_manager, channel))
+    loop.create_task(network_collector(__network_manager, channel))
 
 
-def NetworkManager() -> network_manager.NetworkManager:
-    return __network_manager
+@api.on_event("shutdown")
+async def shutdown():
+    pass
+
+
+@api.websocket("/ws")
+async def ws_endpoint(ws: WebSocket, channel: PubSub = Depends(Channel)):
+    await ws.accept()
+    ws_sessions.add(ws)
+    event_queue: asyncio.Queue[str] = asyncio.Queue()
+
+    def receive_event(data: str):
+        nonlocal event_queue
+        event_queue.put_nowait(data)
+
+    channel.subscribe(receive_event)
+
+    while True:
+        try:
+            log = await event_queue.get()
+            await ws.send_text(log)
+            event_queue.task_done()
+        except WebSocketDisconnect:
+            break
+        except asyncio.CancelledError:
+            break
+
+    channel.unsubscribe(receive_event)
 
 
 @api.get("/network", response_model=network_manager.NetworkData)
@@ -121,7 +166,7 @@ async def startConnectionSetup(
     resp, status = await qnode.start_connection_setup(
         dest_qnode.ip_address_list[0], minimum_fidelity, minimum_bell_pair_bandwidth
     )
-    response.status_code = status
+    response.status_code = 201
     return {"message": resp, "status": status}
 
 

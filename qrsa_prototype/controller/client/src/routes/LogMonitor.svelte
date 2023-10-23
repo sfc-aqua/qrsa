@@ -5,7 +5,7 @@
 
 <div class="container">
 	{#each $networks.qnodes as qnode}
-		<div>
+		<div class="log-content">
 			<h3>{qnode.name}</h3>
 			<Log qnodeId={qnode.id} />
 		</div>
@@ -16,5 +16,9 @@
 	.container {
 		display: flex;
 		height: 30vh;
+		width: 100%;
+	}
+	.log-content {
+		flex-grow: 1;
 	}
 </style>

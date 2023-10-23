@@ -4,39 +4,24 @@ import API from '$lib/api';
 
 export const networks = readable<NetworkData>({ qnodes: [], links: [] }, (set) => {
 	API.fetchNetworkStatus().then(set);
-	const id = setInterval(() => API.fetchNetworkStatus().then(set), 3000);
-	return () => clearInterval(id);
+	API.ws.subscribe('network', set);
+	return () => API.ws.unsubscribe('network', set);
 });
 
-const logRetrievalTimers: number[] = [];
-const createLogRetrievalTimer = (id: string, update) => {
-	return setInterval(
-		() =>
-			API.getLogs(id).then(({ logs }) => {
-				if (!logs) return;
-				update((values) => {
-					return { ...values, [id]: [...values[id], logs] };
-				});
-			}),
-		1000
-	);
-};
-
 export const logs = writable<{ [key: string]: string[] }>({}, (set, update) => {
-	networks.subscribe(({ qnodes }) => {
-		const ids = qnodes.map(({ id }) => id);
+	const f = (event: { data: string; qnode_id: string }) => {
+		const { qnode_id: qnodeId, data } = event;
 		update((values) => {
-			for (const id of ids) {
-				if (id in values) continue;
-				values[id] = [];
-				logRetrievalTimers.push(createLogRetrievalTimer(id, update));
+			if (!(qnodeId in values)) {
+				values[qnodeId] = [];
 			}
+			values[qnodeId].push(data);
 			return values;
 		});
-	});
-	return () => {
-		logRetrievalTimers.forEach((id) => clearInterval(id));
 	};
+
+	API.ws.subscribe('log', f);
+	return () => API.ws.unsubscribe('log', f);
 });
 
 export const clearLog = (id: string) => {

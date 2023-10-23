@@ -1,3 +1,4 @@
+from contextlib import asynccontextmanager
 import os
 import subprocess
 from fastapi import FastAPI
@@ -12,6 +13,14 @@ client_build_path = os.path.join(client_dir, "build")
 #     subprocess.run("npm ci", shell=True, cwd=client_dir)
 #     subprocess.run("npm run build", shell=True, cwd=client_dir)
 
-app = FastAPI()
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    await api.router.startup()
+    yield
+    await api.router.shutdown()
+
+
+app = FastAPI(lifespan=lifespan)
 app.mount("/api", api)
 app.mount("/", StaticFiles(directory=client_build_path, html=True))

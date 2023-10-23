@@ -48,7 +48,7 @@
 					<td><button on:click={() => API.stopContainer(c?.id)}>stop</button></td>
 				{/if}
 				<td>
-					<a href={`/qnode/${qnode.id}`}>show</a>
+					<a href={`/qnode?qnode_id=${qnode.id}`}>show</a>
 				</td>
 				<td>
 					{#each $networks.qnodes as targetNode}
