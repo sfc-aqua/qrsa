@@ -269,3 +269,31 @@ async def handle_barrier_response(
     )
 
     return {"message": "Received barrier response"}
+
+
+@router.get("/status")
+@inject
+async def get_status(
+    hardware_monitor: HardwareMonitor = Depends(Provide[Container.hardware_monitor]),
+    connection_manager: ConnectionManager = Depends(
+        Provide[Container.connection_manager]
+    ),
+    routing_daemon: RoutingDaemon = Depends(Provide[Container.routing_daemon]),
+    rule_engine: RuleEngine = Depends(Provide[Container.rule_engine]),
+    config: Any = Depends(Provide[Container.config]),
+):
+    """
+    Get QNode Status for debugging
+    """
+    return {
+        "application_id_to_connection_id": connection_manager.application_id_to_connection_id,
+        "pending_connections": connection_manager.pending_connections,
+        "running_connections": connection_manager.running_connections,
+        "sent_la": connection_manager.sent_la,
+        "routing_table": routing_daemon.routing_table,
+        "current_pptsn": rule_engine.current_pptsn,
+        "la_switch_timings": rule_engine.la_switch_timings,
+        "available_link_resource": rule_engine.available_link_resource.qsize,
+        "running_runtime": rule_engine.running_runtime,
+        "config": config,
+    }
