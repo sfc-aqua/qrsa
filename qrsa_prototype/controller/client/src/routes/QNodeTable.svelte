@@ -1,7 +1,7 @@
 <script lang="ts">
 	import type { PortInfo } from '../client';
 	import API from '$lib/api';
-	import { clearLog, networks } from '../stores/network';
+	import { clearLog, networks, qnodeStatuses } from '../stores/network';
 
 	const convertPortInfo = (ports: Record<string, PortInfo[]> | undefined): string => {
 		if (!ports) return '';
@@ -67,5 +67,8 @@
 <style>
 	.name {
 		font-weight: 900;
+	}
+	table {
+		margin-bottom: auto;
 	}
 </style>

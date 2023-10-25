@@ -1,6 +1,6 @@
 import { dev } from '$app/environment';
 
-export async function load({  url }) {
+export async function load({ url }) {
 	const qnodeId = url.searchParams.get('qnode_id');
 	return { qnodeId };
 }

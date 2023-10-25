@@ -290,10 +290,22 @@ async def get_status(
         "pending_connections": connection_manager.pending_connections,
         "running_connections": connection_manager.running_connections,
         "sent_la": connection_manager.sent_la,
-        "routing_table": routing_daemon.routing_table,
         "current_pptsn": rule_engine.current_pptsn,
         "la_switch_timings": rule_engine.la_switch_timings,
         "available_link_resource": rule_engine.available_link_resource.qsize,
         "running_runtime": rule_engine.running_runtime,
+    }
+
+@router.get("/config")
+@inject
+async def get_config(
+    routing_daemon: RoutingDaemon = Depends(Provide[Container.routing_daemon]),
+    config: Any = Depends(Provide[Container.config]),
+):
+    """
+    Get QNode Config for debugging
+    """
+    return {
+        "routing_table": routing_daemon.routing_table,
         "config": config,
     }

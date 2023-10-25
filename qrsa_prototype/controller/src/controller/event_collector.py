@@ -1,4 +1,5 @@
 import asyncio, json
+import aiohttp
 from controller import network_manager
 from controller.utils import PubSub
 import docker
@@ -20,6 +21,21 @@ async def log_collector(nm: network_manager.NetworkManager, pubsub: PubSub):
                     )
                 )
         await asyncio.sleep(0.5)
+
+
+async def qnode_status_collector(nm: network_manager.NetworkManager, pubsub: PubSub):
+    while True:
+        for qnode in nm.qnodes:
+            url = f"http://{qnode.ip}:8080/status"
+            async with aiohttp.ClientSession() as session:
+                async with session.get(
+                    url, headers={"Content-Type": "application/json"}
+                ) as response:
+                    resp = await response.json()
+                    resp["qnode_id"] = qnode.id
+                    resp["type"] = "qnode_status"
+                    pubsub.publish(json.dumps(resp))
+        await asyncio.sleep(5)
 
 
 async def network_collector(nm: network_manager.NetworkManager, pubsub: PubSub):

@@ -1,7 +1,11 @@
 import asyncio
 from datetime import datetime, timedelta, timezone
 from controller.container import ContainerInfo
-from controller.event_collector import log_collector, network_collector
+from controller.event_collector import (
+    log_collector,
+    network_collector,
+    qnode_status_collector,
+)
 from controller.link import LinkData
 from controller.utils import PubSub
 from fastapi import Depends, FastAPI, Response, WebSocket, WebSocketDisconnect
@@ -51,6 +55,7 @@ async def startup():
     loop = asyncio.get_running_loop()
     loop.create_task(log_collector(__network_manager, channel))
     loop.create_task(network_collector(__network_manager, channel))
+    loop.create_task(qnode_status_collector(__network_manager, channel))
 
 
 @api.on_event("shutdown")

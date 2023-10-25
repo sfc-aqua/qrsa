@@ -1,4 +1,5 @@
 from contextlib import asynccontextmanager
+import logging
 import os
 import subprocess
 from fastapi import FastAPI

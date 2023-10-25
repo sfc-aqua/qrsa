@@ -48,8 +48,9 @@ const ping = (containerId: string, target: string, onProgress: any) => {
 };
 
 type WSEventListeners = {
-	log: Function[];
-	network: Function[];
+	log: Array<(event: { qnodeId: string; type: 'log'; data: string }) => void>;
+	network: Array<(event: any) => void>;
+	qnode_status: Array<(event: any) => void>;
 };
 type WSEventType = keyof WSEventListeners;
 
@@ -61,7 +62,8 @@ class WSConn {
 		this.url = url;
 		this.eventListeners = {
 			log: [],
-			network: []
+			network: [],
+			qnode_status: []
 		};
 		this.connect();
 	}
@@ -92,10 +94,10 @@ class WSConn {
 			}
 		} catch (e) {}
 	}
-	subscribe(type: WSEventType, fn: Function) {
+	subscribe(type: WSEventType, fn: (event: any) => void) {
 		this.eventListeners[type].push(fn);
 	}
-	unsubscribe(type: WSEventType, fn: Function) {
+	unsubscribe(type: WSEventType, fn: (event: any) => void) {
 		this.eventListeners[type] = this.eventListeners[type].filter((f) => f != fn);
 	}
 }
