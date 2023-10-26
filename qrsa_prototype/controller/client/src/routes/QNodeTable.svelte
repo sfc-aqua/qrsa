@@ -1,7 +1,7 @@
 <script lang="ts">
 	import type { PortInfo } from '../client';
 	import API from '$lib/api';
-	import { clearLog, networks } from '../stores/network';
+	import { clearLog, networks, qnodeStatuses } from '../stores/network';
 
 	const convertPortInfo = (ports: Record<string, PortInfo[]> | undefined): string => {
 		if (!ports) return '';
@@ -48,7 +48,7 @@
 					<td><button on:click={() => API.stopContainer(c?.id)}>stop</button></td>
 				{/if}
 				<td>
-					<a href={`/qnode/${qnode.id}`}>show</a>
+					<a href={`/qnode?qnode_id=${qnode.id}`}>show</a>
 				</td>
 				<td>
 					{#each $networks.qnodes as targetNode}
@@ -67,5 +67,8 @@
 <style>
 	.name {
 		font-weight: 900;
+	}
+	table {
+		margin-bottom: auto;
 	}
 </style>

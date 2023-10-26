@@ -149,7 +149,9 @@ class ConnectionManager(AbstractConnectionManager):
                 # This doesn't have to be sent to other nodes.
                 self_ruleset = rulesets[host]
             else:
-                logger.debug(f"Sending RuleSet to {host}, id: {given_request.application_id}")
+                logger.debug(
+                    f"Sending RuleSet to {host}, id: {given_request.application_id}"
+                )
                 # Take a ruleset and send it to destination
                 connection_setup_response_json = ConnectionSetupResponse(
                     **{
@@ -332,7 +334,7 @@ class ConnectionManager(AbstractConnectionManager):
                     data=message,
                     headers=headers,
                 ) as response:
-                    if response.content_type == "text/plain" :
+                    if response.content_type == "text/plain":
                         text = await response.text()
                         logger.warn(f"received text/plain: {text}")
                         return (text, response.status)

@@ -47,6 +47,63 @@ const ping = (containerId: string, target: string, onProgress: any) => {
 	return execRunStream(containerId, `ping ${target}`, handleProgressEvent);
 };
 
+type WSEventListeners = {
+	log: Array<(event: { qnodeId: string; type: 'log'; data: string }) => void>;
+	network: Array<(event: any) => void>;
+	qnode_status: Array<(event: any) => void>;
+};
+type WSEventType = keyof WSEventListeners;
+
+class WSConn {
+	ws: WebSocket | undefined;
+	url: string;
+	eventListeners: WSEventListeners;
+	constructor(url = 'ws://localhost:9000/api/ws') {
+		this.url = url;
+		this.eventListeners = {
+			log: [],
+			network: [],
+			qnode_status: []
+		};
+		this.connect();
+	}
+	connect() {
+		this.ws = new WebSocket(this.url);
+		console.log('connecting...');
+		this.ws.onmessage = this.handleMessage.bind(this);
+		this.ws.onerror = console.warn;
+		this.ws.onopen = () => console.log('connected');
+		this.ws.onclose = this.handleClose.bind(this);
+	}
+	handleClose(event: CloseEvent) {
+		console.warn('closed: ', event.reason);
+		console.log('reconnect...');
+		setTimeout(() => {
+			this.connect();
+		}, 1000);
+	}
+	handleMessage(e: MessageEvent) {
+		try {
+			const value = JSON.parse(e.data);
+			const type = value.type;
+			if (type in this.eventListeners) {
+				const listeners = this.eventListeners[type as WSEventType];
+				for (const f of listeners) {
+					f(value);
+				}
+			}
+		} catch (e) {}
+	}
+	subscribe(type: WSEventType, fn: (event: any) => void) {
+		this.eventListeners[type].push(fn);
+	}
+	unsubscribe(type: WSEventType, fn: (event: any) => void) {
+		this.eventListeners[type] = this.eventListeners[type].filter((f) => f != fn);
+	}
+}
+
+const ws = new WSConn();
+
 const API = {
 	startContaienr,
 	stopContainer,
@@ -57,6 +114,7 @@ const API = {
 	ping,
 	fetchNetworkStatus,
 	clearLogRetrievedAt,
-	startConnectionSetup
+	startConnectionSetup,
+	ws
 };
 export default API;

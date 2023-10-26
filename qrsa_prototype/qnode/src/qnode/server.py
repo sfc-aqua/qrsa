@@ -1,4 +1,6 @@
+import logging
 import socket
+from typing import Any
 import yaml
 import aiohttp
 from fastapi import FastAPI, Request
@@ -35,3 +37,19 @@ def generate_config() -> Config:
     config["meta"]["ip_address"] = ip_address
     config["meta"]["hostname"] = hostname
     return Config(**config)
+
+class EndpointFilter(logging.Filter):
+    def __init__(
+        self,
+        path: str,
+        *args: Any,
+        **kwargs: Any,
+    ):
+        super().__init__(*args, **kwargs)
+        self._path = path
+
+    def filter(self, record: logging.LogRecord) -> bool:
+        return record.getMessage().find(self._path) == -1
+
+uvicorn_logger = logging.getLogger("uvicorn.access")
+uvicorn_logger.addFilter(EndpointFilter(path="/status"))

@@ -27,16 +27,16 @@ class NetworkManager:
         containers = [
             c
             for c in self.docker_client.containers.list(all=True)
-            if c.name.startswith("qrsa-") and not c.name.startswith("qrsa-controller") # type: ignore
+            if c.name.startswith("qrsa-") and not c.name.startswith("qrsa-controller")  # type: ignore
         ]
         container_info_list = [
             ContainerInfo(
                 id=c.short_id,
-                name=c.name, # type: ignore
-                status=c.status, # type: ignore
-                top=c.top() if c.status == "running" else None, # type: ignore
+                name=c.name,  # type: ignore
+                status=c.status,  # type: ignore
+                top=c.top() if c.status == "running" else None,  # type: ignore
                 attrs=c.attrs,
-                ports=c.ports, # type: ignore
+                ports=c.ports,  # type: ignore
             )
             for c in containers
         ]
